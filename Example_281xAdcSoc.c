@@ -51,7 +51,6 @@ Uint16 ConversionCount;
 Uint16 Voltage1[10];
 Uint16 Voltage2[10];
 void init_eva();
-void init_evb();
 
 main() 
 {
@@ -101,7 +100,6 @@ main()
    PieVectTable.ADCINT = &adc_isr;
    EDIS;    // This is needed to disable write to EALLOW protected registers
    init_eva();
-   init_evb();
 // Step 4. Initialize all the Device Peripherals:
 // This function is found in DSP281x_InitPeripherals.c
 // InitPeripherals(); // Not required for this example
@@ -197,8 +195,7 @@ void init_eva()
 
   // Enable compare for PWM1-PWM6
   EvaRegs.CMPR1 = 0x6000;
-  EvaRegs.CMPR2 = 0x4000;
-  EvaRegs.CMPR3 = 0x2000;
+  EvaRegs.CMPR2 = 0x6000;
 
   // Compare action control.  Action that takes place
   // on a cmpare event
@@ -212,58 +209,9 @@ void init_eva()
   EvaRegs.DBTCONA.all = 0x0000; // Disable deadband
   EvaRegs.COMCONA.all = 0xA600;
 
+  EvaRegs.DBTCONA.bit.DBT=15;	//Dead-band timer period
+  EvaRegs.DBTCONA.bit.EDBT1=1;
+  EvaRegs.DBTCONA.bit.EDBT2=1;
+  EvaRegs.DBTCONA.bit.DBTPS=7;//Dead-band timer prescaler
 
 }
-
-void init_evb()
-{
-
-// EVB Configure T3PWM, T4PWM and PWM7-PWM12
-// Step 1 - Initialize the Timers
-
-  // Initialize EVB Timer3
-  // Timer3 controls T3PWM and PWM7-12
-  EvbRegs.T3PR = 0xFFFF;       // Timer3 period
-  EvbRegs.T3CMPR = 0x8000;     // Timer3 compare
-  EvbRegs.T3CNT = 0x0000;      // Timer3 counter
-  // TMODE = continuous up/down
-  // Timer enable
-  // Timer compare enable
-  EvbRegs.T3CON.all = 0x1042;
-
-  // Initialize EVB Timer4
-  // Timer4 controls T4PWM
-  EvbRegs.T4PR = 0xFFFF;       // Timer4 period
-  EvbRegs.T4CMPR = 0x8000;     // Timer4 compare
-  EvbRegs.T4CNT = 0x0000;      // Timer4 counter
-  // TMODE = continuous up/down
-  // Timer enable
-  // Timer compare enable
-  EvbRegs.T4CON.all = 0x1042;
-
-  // Setup T3PWM and T4PWM
-  // Drive T3/T4 PWM by compare logic
-  EvbRegs.GPTCONB.bit.TCMPOE = 1;
-  // Polarity of GP Timer 3 Compare = Active low
-  EvbRegs.GPTCONB.bit.T3PIN = 1;
-  // Polarity of GP Timer 4 Compare = Active high
-  EvbRegs.GPTCONB.bit.T4PIN = 2;
-
-  // Enable compare for PWM7-PWM12
-  EvbRegs.CMPR4 = 0x6000;
-  EvbRegs.CMPR5 = 0x4000;
-  EvbRegs.CMPR6 = 0x2000;
-
-  // Compare action control.  Action that takes place
-  // on a cmpare event
-  // output pin 1 CMPR4 - active high
-  // output pin 2 CMPR4 - active low
-  // output pin 3 CMPR5 - active high
-  // output pin 4 CMPR5 - active low
-  // output pin 5 CMPR6 - active high
-  // output pin 6 CMPR6 - active low
-  EvbRegs.ACTRB.all = 0x0666;
-  EvbRegs.DBTCONB.all = 0x0000; // Disable deadband
-  EvbRegs.COMCONB.all = 0xA600;
-}
-
