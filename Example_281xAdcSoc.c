@@ -60,11 +60,10 @@ main()
 // This example function is found in the DSP281x_SysCtrl.c file.
    InitSysCtrl();
 
-// For this example, set HSPCLK to SYSCLKOUT / 6 (25Mhz assuming 150Mhz SYSCLKOUT)
+// For this example, set HSPCLK to SYSCLKOUT / 1 (150Mhz assuming 150Mhz SYSCLKOUT)
    EALLOW;
    SysCtrlRegs.HISPCP.all = 0x0;  // HSPCLK = SYSCLKOUT/1
-   GpioMuxRegs.GPAMUX.all = 0x00FF; // EVA PWM 1-6  pins
-   GpioMuxRegs.GPBMUX.all = 0x00FF; // EVB PWM 7-12 pins
+   GpioMuxRegs.GPAMUX.all = 0x004F; // EVA Timer1CMP + PWM 1-4  pins
    EDIS;
    
 // Step 2. Initialize GPIO: 
@@ -159,13 +158,6 @@ main()
    AdcRegs.ADCCHSELSEQ4.bit.CONV14=0x1;	// Ref_2
    AdcRegs.ADCCHSELSEQ4.bit.CONV15=0x0;	// Ref_1
 
-// Configure EVA
-// Assumes EVA Clock is already enabled in InitSysCtrl();
-   EvaRegs.T1CMPR = 0x0080;               // Setup T1 compare value
-   EvaRegs.T1PR = 0xFFFF;                 // Setup period register
-   EvaRegs.GPTCONA.bit.T1TOADC = 1;       // Enable EVASOC in EVA
-   EvaRegs.T1CON.all = 0x1042;            // Enable timer 1 compare (upcount mode)
-
 // Wait for ADC interrupt
    while(1)
    {
@@ -200,59 +192,40 @@ interrupt void  adc_isr(void)
 
 void init_eva()
 {
+  // Frequency of General-purpose Timer1 is 150MHz
+	EvaRegs.GPTCONA.bit.T1TOADC=1;	//Setting of underflow interrupt flag starts ADC
+	EvaRegs.GPTCONA.bit.TCMPOE=1;	//Timer compare output: timer compare logic
+  EvaRegs.GPTCONA.bit.T1PIN=2;	//Polarity of GP timer 1 compare output: Active high
 
-// EVA Configure T1PWM, T2PWM, PWM1-PWM6
-// Initalize the timers
-   // Initalize EVA Timer1
-   EvaRegs.T1PR = 0xFFFF;       // Timer1 period
-   EvaRegs.T1CMPR = 0x8000;     // Timer1 compare
-   EvaRegs.T1CNT = 0x0000;      // Timer1 counter
-   // TMODE = continuous up/down
-   // Timer enable
-   // Timer compare enable
-   EvaRegs.T1CON.all = 0x1042;
+  EvaRegs.T1CON.bit.FREE=0;
+  EvaRegs.T1CON.bit.SOFT=1;	//Stop after current timer period is complete on emulation suspend
+  EvaRegs.T1CON.bit.TMODE=1;	//Continuous-Up/-Down Count Mode
+  EvaRegs.T1CON.bit.TPS=0;	//Input clock pre-scaler
+  EvaRegs.T1CON.bit.TCLKS10=0;//Clock source:HSPCLK
+  EvaRegs.T1CON.bit.TENABLE=1;//Timer enable
+  EvaRegs.T1CON.bit.TCLD10=1; //Timer compare register reload condition
+  //When counter value is 0 or equals period register value
+  EvaRegs.T1CON.bit.TECMPR=1; //Enable timer compare operation
 
+	EvaRegs.COMCONA.bit.CENABLE=1;	//Compare enable
+	EvaRegs.COMCONA.bit.CLD=1;		//Compare register CMPRx reload condition:
+	//When T1CNT = 0 or T1CNT = T1PR (that is, on underflow or period match)
+	EvaRegs.COMCONA.bit.SVENABLE=0;	//Disables space vector PWM mode
+	EvaRegs.COMCONA.bit.ACTRLD=1;	//Action control register reload condition
+	EvaRegs.COMCONA.bit.FCOMPOE=1;	//Full compare outputs, PWM1/2/3/4/5/6, are driven by corresponding compare logic
 
-  // Initalize EVA Timer2
-  EvaRegs.T2PR = 0xFFFF;       // Timer2 period
-  EvaRegs.T2CMPR = 0x8000;     // Timer2 compare
-  EvaRegs.T2CNT = 0x0000;      // Timer2 counter
-  // TMODE = continuous up/down
-  // Timer enable
-  // Timer compare enable
-  EvaRegs.T2CON.all = 0x1042;
-
-
-  // Setup T1PWM and T2PWM
-  // Drive T1/T2 PWM by compare logic
-  EvaRegs.GPTCONA.bit.TCMPOE = 1;
-  // Polarity of GP Timer 1 Compare = Active low
-  EvaRegs.GPTCONA.bit.T1PIN = 1;
-  // Polarity of GP Timer 2 Compare = Active high
-  EvaRegs.GPTCONA.bit.T2PIN = 2;
-
-  // Enable compare for PWM1-PWM6
-  EvaRegs.CMPR1 = 0x6000;
-  EvaRegs.CMPR2 = 0x6000;
-
-  EvaRegs.COMCONA.bit.CLD=1;		//Compare register CMPRx reload condition:
-  //When T1CNT = 0 or T1CNT = T1PR (that is, on underflow or period match)
-
-  // Compare action control.  Action that takes place
-  // on a cmpare event
-  // output pin 1 CMPR1 - active high
-  // output pin 2 CMPR1 - active low
-  // output pin 3 CMPR2 - active high
-  // output pin 4 CMPR2 - active low
-  // output pin 5 CMPR3 - active high
-  // output pin 6 CMPR3 - active low
-  EvaRegs.ACTRA.all = 0x0666;
-  EvaRegs.DBTCONA.all = 0x0000; // Disable deadband
-  EvaRegs.COMCONA.all = 0xA600;
+  EvaRegs.ACTRA.all=0x0666;	//0x0666 or 0x0999
 
   EvaRegs.DBTCONA.bit.DBT=15;	//Dead-band timer period
   EvaRegs.DBTCONA.bit.EDBT1=1;
   EvaRegs.DBTCONA.bit.EDBT2=1;
   EvaRegs.DBTCONA.bit.DBTPS=7;//Dead-band timer prescaler
 
+  EvaRegs.CMPR1=3000;
+  EvaRegs.CMPR2=2000;
+  // Width of Deadband is 6.4us.
+
+  EvaRegs.T1PR = 7499;// Timer1 period
+  EvaRegs.T1CMPR=3749;// D=50%
+  EvaRegs.T1CNT=0x3749;
 }
