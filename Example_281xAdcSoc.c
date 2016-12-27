@@ -62,7 +62,7 @@ main()
 
 // For this example, set HSPCLK to SYSCLKOUT / 6 (25Mhz assuming 150Mhz SYSCLKOUT)
    EALLOW;
-   SysCtrlRegs.HISPCP.all = 0x3;  // HSPCLK = SYSCLKOUT/6
+   SysCtrlRegs.HISPCP.all = 0x0;  // HSPCLK = SYSCLKOUT/1
    GpioMuxRegs.GPAMUX.all = 0x00FF; // EVA PWM 1-6  pins
    GpioMuxRegs.GPBMUX.all = 0x00FF; // EVB PWM 7-12 pins
    EDIS;
@@ -117,11 +117,47 @@ main()
    ConversionCount = 0;
     
 // Configure ADC
-   AdcRegs.ADCMAXCONV.all = 0x0001;       // Setup 2 conv's on SEQ1
-   AdcRegs.ADCCHSELSEQ1.bit.CONV00 = 0x3; // Setup ADCINA3 as 1st SEQ1 conv.
-   AdcRegs.ADCCHSELSEQ1.bit.CONV01 = 0x2; // Setup ADCINA2 as 2nd SEQ1 conv.
-   AdcRegs.ADCTRL2.bit.EVA_SOC_SEQ1 = 1;  // Enable EVASOC to start SEQ1
-   AdcRegs.ADCTRL2.bit.INT_ENA_SEQ1 = 1;  // Enable SEQ1 interrupt (every EOS)
+   AdcRegs.ADCTRL1.bit.RESET=0;		//ADC module software reset
+   AdcRegs.ADCTRL1.bit.SUSMOD=1;		//Emulation-suspend mode
+   AdcRegs.ADCTRL1.bit.ACQ_PS=4;		//Sampling Window (ACQ_PS-1)*ADCLK
+   AdcRegs.ADCTRL1.bit.CPS=1;			//Core clock pre-scaler
+   AdcRegs.ADCTRL1.bit.CONT_RUN=0;		//Continuous run
+   AdcRegs.ADCTRL1.bit.SEQ_OVRD=0;		//Sequencer override
+   AdcRegs.ADCTRL1.bit.SEQ_CASC=1;		//Cascaded sequencer operation
+   //SEQ1 and SEQ2 operate as a single 16-state sequencer   (SEQ)
+
+   AdcRegs.ADCTRL2.bit.EVB_SOC_SEQ=0;	//EVB SOC enable for cascaded sequencer
+   AdcRegs.ADCTRL2.bit.RST_SEQ1=1;		//Immediately reset sequencer to state CONV00
+   AdcRegs.ADCTRL2.bit.SOC_SEQ1=0;		//Clears a pending SOC trigger
+   AdcRegs.ADCTRL2.bit.INT_ENA_SEQ1=1;	//Interrupt request by INT SEQ1 is enabled.
+   AdcRegs.ADCTRL2.bit.INT_MOD_SEQ1=0;	//INT SEQ1 is set at the end of every SEQ1 sequence.
+   AdcRegs.ADCTRL2.bit.EVA_SOC_SEQ1=1;	//Allows SEQ1/SEQ to be started by Event Manager A trigger.
+   AdcRegs.ADCTRL2.bit.EXT_SOC_SEQ1=0;	//External signal start-of-conversion bit for SEQ1
+   AdcRegs.ADCTRL2.bit.RST_SEQ2=1;		//Immediately resets SEQ2 to an initial ¡°pretriggered¡± state
+   AdcRegs.ADCTRL2.bit.INT_ENA_SEQ2=1;	//Interrupt request by INT SEQ2 is enabled
+   AdcRegs.ADCTRL2.bit.INT_MOD_SEQ2=0;	//INT SEQ2 is set at the end of every SEQ2 sequence.
+   AdcRegs.ADCTRL2.bit.EVB_SOC_SEQ2=0;	//SEQ2 cannot be started by EVB trigger.
+
+   AdcRegs.ADCTRL3.bit.ADCEXTREF=0;	//ADCREFP(2V) and ADCREFM(1V) pins are outputs for internal reference sources.
+   AdcRegs.ADCTRL3.bit.ADCCLKPS=4;		//Core clock divider	//9.375MHz
+   AdcRegs.ADCTRL3.bit.SMODE_SEL=0;	//Sequential sampling mode is selected.
+   AdcRegs.ADCMAXCONV.all=0x0F;
+   AdcRegs.ADCCHSELSEQ1.bit.CONV00=0x0;	// Ref_1
+   AdcRegs.ADCCHSELSEQ1.bit.CONV01=0x1;	// Ref_2
+   AdcRegs.ADCCHSELSEQ1.bit.CONV02=0x2;	// DC voltage
+   AdcRegs.ADCCHSELSEQ1.bit.CONV03=0x2;	// DC voltage
+   AdcRegs.ADCCHSELSEQ2.bit.CONV04=0x3;	// AC voltage
+   AdcRegs.ADCCHSELSEQ2.bit.CONV05=0x3;	// AC voltage
+   AdcRegs.ADCCHSELSEQ2.bit.CONV06=0x4;	// AC current
+   AdcRegs.ADCCHSELSEQ2.bit.CONV07=0x4;	// AC current
+   AdcRegs.ADCCHSELSEQ3.bit.CONV08=0x4;	// AC current
+   AdcRegs.ADCCHSELSEQ3.bit.CONV09=0x4;	// AC current
+   AdcRegs.ADCCHSELSEQ3.bit.CONV10=0x3;	// AC voltage
+   AdcRegs.ADCCHSELSEQ3.bit.CONV11=0x3;	// AC voltage
+   AdcRegs.ADCCHSELSEQ4.bit.CONV12=0x2;	// DC voltage
+   AdcRegs.ADCCHSELSEQ4.bit.CONV13=0x2;	// DC voltage
+   AdcRegs.ADCCHSELSEQ4.bit.CONV14=0x1;	// Ref_2
+   AdcRegs.ADCCHSELSEQ4.bit.CONV15=0x0;	// Ref_1
 
 // Configure EVA
 // Assumes EVA Clock is already enabled in InitSysCtrl();
