@@ -145,6 +145,8 @@ interrupt void  adc_isr(void)
   Voltage1[ConversionCount] = AdcRegs.ADCRESULT0 >>4;
   Voltage2[ConversionCount] = AdcRegs.ADCRESULT1 >>4;
 
+  EvaRegs.CMPR1 = AdcRegs.ADCRESULT0;
+  EvaRegs.CMPR2 = AdcRegs.ADCRESULT0;
   // If 40 conversions have been logged, start over
   if(ConversionCount == 9) 
   {
@@ -196,6 +198,9 @@ void init_eva()
   // Enable compare for PWM1-PWM6
   EvaRegs.CMPR1 = 0x6000;
   EvaRegs.CMPR2 = 0x6000;
+
+  EvaRegs.COMCONA.bit.CLD=1;		//Compare register CMPRx reload condition:
+  //When T1CNT = 0 or T1CNT = T1PR (that is, on underflow or period match)
 
   // Compare action control.  Action that takes place
   // on a cmpare event
