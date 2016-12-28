@@ -84,12 +84,7 @@ main()
 // The shell ISR routines are found in DSP281x_DefaultIsr.c.
 // This function is found in DSP281x_PieVect.c.
    InitPieVectTable();
-     
-// Interrupts that are used in this example are re-mapped to
-// ISR functions found within this file.       
-   EALLOW;  // This is needed to write to EALLOW protected register
-   PieVectTable.ADCINT = &adc_isr;
-   EDIS;    // This is needed to disable write to EALLOW protected registers
+
 
 // Step 4. Initialize all the Device Peripherals:
 // This function is found in DSP281x_InitPeripherals.c
@@ -110,19 +105,4 @@ main()
 
    }
 
-}
-
-
-interrupt void  adc_isr(void)
-{
-
-  EvaRegs.CMPR1 = AdcRegs.ADCRESULT0;
-  EvaRegs.CMPR2 = AdcRegs.ADCRESULT0;
-
-  // Reinitialize for next ADC sequence
-  AdcRegs.ADCTRL2.bit.RST_SEQ1 = 1;         // Reset SEQ1
-  AdcRegs.ADCST.bit.INT_SEQ1_CLR = 1;       // Clear INT SEQ1 bit
-  PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;   // Acknowledge interrupt to PIE
-  
-  return;
 }
