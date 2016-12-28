@@ -46,11 +46,6 @@
 			<location>C:/Users/Noah/workspace_v5_5/Example_281xAdcSoc/DSP281x_GlobalVariableDefs.c</location>
 		</link>
 		<link>
-			<name>DSP281x_Headers_nonBIOS.cmd</name>
-			<type>1</type>
-			<location>C:/Users/Noah/workspace_v5_5/Example_281xAdcSoc/DSP281x_Headers_nonBIOS.cmd</location>
-		</link>
-		<link>
 			<name>DSP281x_PieCtrl.c</name>
 			<type>1</type>
 			<location>C:/Users/Noah/workspace_v5_5/Example_281xAdcSoc/DSP281x_PieCtrl.c</location>

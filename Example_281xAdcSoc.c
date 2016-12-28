@@ -57,15 +57,11 @@ main()
    InitSysCtrl();
 
 // For this example, set HSPCLK to SYSCLKOUT / 1 (150Mhz assuming 150Mhz SYSCLKOUT)
-   EALLOW;
-   SysCtrlRegs.HISPCP.all = 0x0;  // HSPCLK = SYSCLKOUT/1
-   GpioMuxRegs.GPAMUX.all = 0x004F; // EVA Timer1CMP + PWM 1-4  pins
-   EDIS;
    
 // Step 2. Initialize GPIO: 
 // This example function is found in the DSP281x_Gpio.c file and
 // illustrates how to set the GPIO to it's default state.
-// InitGpio();  // Skipped for this example  
+   InitGpio();  // Skipped for this example  
 
 // Step 3. Clear all interrupts and initialize PIE vector table:
 // Disable CPU interrupts 
@@ -94,7 +90,7 @@ main()
    EALLOW;  // This is needed to write to EALLOW protected register
    PieVectTable.ADCINT = &adc_isr;
    EDIS;    // This is needed to disable write to EALLOW protected registers
-   init_eva();
+
 // Step 4. Initialize all the Device Peripherals:
 // This function is found in DSP281x_InitPeripherals.c
 // InitPeripherals(); // Not required for this example
@@ -111,7 +107,7 @@ main()
 // Wait for ADC interrupt
    while(1)
    {
-      LoopCount++;
+
    }
 
 }

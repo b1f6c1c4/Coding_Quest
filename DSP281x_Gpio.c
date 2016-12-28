@@ -25,8 +25,7 @@ void InitGpio(void)
 // Set GPIO A port pins,AL(Bits 7:0)(input)-AH(Bits 15:8) (output) 8bits
 // Input Qualifier =0, none
      EALLOW;
-     GpioMuxRegs.GPAMUX.all=0x00FF;
-     GpioMuxRegs.GPBMUX.all=0x00FF;
+     GpioMuxRegs.GPAMUX.all=0x004F;   // EVA Timer1CMP + PWM 1-4  pins
 //     GpioMuxRegs.GPADIR.all=0x001F;
 //     GpioDataRegs.GPACLEAR.all=0x001F;
      GpioMuxRegs.GPFMUX.bit.SCIRXDA_GPIOF5=1;
