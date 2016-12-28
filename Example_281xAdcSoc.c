@@ -46,10 +46,6 @@
 interrupt void adc_isr(void);
 
 // Global variables used in this example:
-Uint16 LoopCount;
-Uint16 ConversionCount;
-Uint16 Voltage1[10];
-Uint16 Voltage2[10];
 void init_eva();
 
 main() 
@@ -170,17 +166,8 @@ main()
 interrupt void  adc_isr(void)
 {
 
-  Voltage1[ConversionCount] = AdcRegs.ADCRESULT0 >>4;
-  Voltage2[ConversionCount] = AdcRegs.ADCRESULT1 >>4;
-
   EvaRegs.CMPR1 = AdcRegs.ADCRESULT0;
   EvaRegs.CMPR2 = AdcRegs.ADCRESULT0;
-  // If 40 conversions have been logged, start over
-  if(ConversionCount == 9) 
-  {
-     ConversionCount = 0;
-  }
-  else ConversionCount++;
 
   // Reinitialize for next ADC sequence
   AdcRegs.ADCTRL2.bit.RST_SEQ1 = 1;         // Reset SEQ1
