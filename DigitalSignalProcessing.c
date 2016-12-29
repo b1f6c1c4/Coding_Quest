@@ -54,7 +54,7 @@ void Processing(void)
 
     ACvoltage[2]=ACvoltage[1];
     ACvoltage[1]=ACvoltage[0];
-    temp=_IQmpy(Gain,newACvoltage)+Offset-ADCGND;//0-3V
+    temp=_IQmpy(Gain,newACvoltage)+Offset-ADCGND;//-1.5-1.5V
     ACvoltage[0]=_IQmpy(temp,_IQ(100))-150;//
     if ((ACvoltage[2]<0) && (ACvoltage[0]>0))
     	ACPhase=0;
@@ -69,8 +69,8 @@ void Processing(void)
     if (DCvoltage[0]>160)
     {
     	EALLOW;
-    	GpioMuxRegs.GPAMUX.all=0x000F;
-    	GpioDataRegs.GPACLEAR.all=0x0000;
+    	GpioMuxRegs.GPAMUX.all=0x004F;
+    	GpioMuxRegs.GPADIR.all=0x0010;
     	GpioDataRegs.GPASET.all=0x0010;
     	EDIS;
     	ACcurrent[2]=ACcurrent[1];
@@ -103,7 +103,7 @@ void Processing(void)
     else
     {
         EALLOW;
-        GpioMuxRegs.GPAMUX.all=0x0000;
+        GpioMuxRegs.GPAMUX.all=0x0040;
         GpioMuxRegs.GPADIR.all=0x001F;
         GpioDataRegs.GPACLEAR.all=0x001F;
         GpioMuxRegs.GPFMUX.bit.SCIRXDA_GPIOF5=1;
