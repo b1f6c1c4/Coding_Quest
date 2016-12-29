@@ -85,6 +85,7 @@ main()
 // This function is found in DSP281x_PieVect.c.
    InitPieVectTable();
 
+   InitEv();
 
 // Step 4. Initialize all the Device Peripherals:
 // This function is found in DSP281x_InitPeripherals.c
