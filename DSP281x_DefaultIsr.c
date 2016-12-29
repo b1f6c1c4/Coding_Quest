@@ -269,8 +269,6 @@ void Processing(void);
 interrupt void  ADCINT_ISR(void)     // ADC
 {
   // Insert ISR Code here
-    EvaRegs.CMPR1 = AdcRegs.ADCRESULT0;
-    EvaRegs.CMPR2 = AdcRegs.ADCRESULT0;
     AdcRegs.ADCST.bit.INT_SEQ1_CLR = 1;
     AdcRegs.ADCST.bit.INT_SEQ2_CLR = 1;
     AdcRegs.ADCTRL2.bit.RST_SEQ1 = 1;
@@ -280,12 +278,12 @@ interrupt void  ADCINT_ISR(void)     // ADC
     extern int16 newDCvoltage;
     extern int16 newRef_1;
     extern int16 newRef_2;
-    newACvoltage = AdcRegs.ADCRESULT4>>4+AdcRegs.ADCRESULT5>>4+AdcRegs.ADCRESULT10>>4+AdcRegs.ADCRESULT11>>4;
-    newACcurrent = AdcRegs.ADCRESULT6>>4+AdcRegs.ADCRESULT7>>4+AdcRegs.ADCRESULT8>>4+AdcRegs.ADCRESULT9>>4;
-    newDCvoltage = AdcRegs.ADCRESULT2>>4+AdcRegs.ADCRESULT3>>4+AdcRegs.ADCRESULT12>>4+AdcRegs.ADCRESULT13>>4;
-    newRef_1 = AdcRegs.ADCRESULT0>>4+AdcRegs.ADCRESULT15>>4;
-    newRef_2 = AdcRegs.ADCRESULT1>>4+AdcRegs.ADCRESULT14>>4;
-    //Processing();
+    newACvoltage = (AdcRegs.ADCRESULT4>>4)+(AdcRegs.ADCRESULT5>>4)+(AdcRegs.ADCRESULT10>>4)+(AdcRegs.ADCRESULT11>>4);
+    newACcurrent = (AdcRegs.ADCRESULT6>>4)+(AdcRegs.ADCRESULT7>>4)+(AdcRegs.ADCRESULT8>>4)+(AdcRegs.ADCRESULT9>>4);
+    newDCvoltage = (AdcRegs.ADCRESULT2>>4)+(AdcRegs.ADCRESULT3>>4)+(AdcRegs.ADCRESULT12>>4)+(AdcRegs.ADCRESULT13>>4);
+    newRef_1 = (AdcRegs.ADCRESULT0>>4)+(AdcRegs.ADCRESULT15>>4);
+    newRef_2 = (AdcRegs.ADCRESULT1>>4)+(AdcRegs.ADCRESULT14>>4);
+    Processing();
     // To receive more interrupts from this PIE group, acknowledge this interrupt
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
 

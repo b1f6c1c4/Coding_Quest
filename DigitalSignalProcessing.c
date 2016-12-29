@@ -24,8 +24,10 @@ int16 newRef_2;
 _iq ACvoltage[3]={0,0,0};
 _iq ACcurrent[3]={0,0,0};
 
-_iq Gain=0;
-_iq Offset=0;
+//_iq Gain=0;
+//_iq Offset=0;
+#define Gain _IQ(1.0)
+#define Offset _IQ(1.0)
 
 _iq temp=0;
 _iq DCvoltage[3]={0,0,0};
@@ -47,8 +49,8 @@ long temp2;
 void Processing(void)
 {
 	ACPhase +=_IQmpy(_IQ(0.0005),PI);// 10us / 20ms
-    Gain=_IQdiv(DeltaRef,_Q1toIQ(newRef_2-newRef_1));
-    Offset=_IQdiv(_IQmpy(_Q1toIQ(newRef_2),Ref_1)-_IQmpy(_Q1toIQ(newRef_1),Ref_2),_Q1toIQ(newRef_2-newRef_1));
+//    Gain=_IQdiv(DeltaRef,_Q1toIQ(newRef_2-newRef_1));
+//    Offset=_IQdiv(_IQmpy(_Q1toIQ(newRef_2),Ref_1)-_IQmpy(_Q1toIQ(newRef_1),Ref_2),_Q1toIQ(newRef_2-newRef_1));
 
     ACvoltage[2]=ACvoltage[1];
     ACvoltage[1]=ACvoltage[0];
