@@ -27,8 +27,8 @@ void InitAdc(void)
 // Configure ADC
    AdcRegs.ADCTRL1.bit.RESET=0;		//ADC module software reset
    AdcRegs.ADCTRL1.bit.SUSMOD=1;		//Emulation-suspend mode
-   AdcRegs.ADCTRL1.bit.ACQ_PS=4;		//Sampling Window (ACQ_PS-1)*ADCLK
-   AdcRegs.ADCTRL1.bit.CPS=1;			//Core clock pre-scaler
+   AdcRegs.ADCTRL1.bit.ACQ_PS=7;		//Sampling Window (ACQ_PS+1)*ADCLK
+   AdcRegs.ADCTRL1.bit.CPS=0;			//Core clock pre-scaler
    AdcRegs.ADCTRL1.bit.CONT_RUN=0;		//Continuous run
    AdcRegs.ADCTRL1.bit.SEQ_OVRD=0;		//Sequencer override
    AdcRegs.ADCTRL1.bit.SEQ_CASC=1;		//Cascaded sequencer operation
@@ -47,7 +47,7 @@ void InitAdc(void)
    AdcRegs.ADCTRL2.bit.EVB_SOC_SEQ2=0;	//SEQ2 cannot be started by EVB trigger.
 
    AdcRegs.ADCTRL3.bit.ADCEXTREF=0;	//ADCREFP(2V) and ADCREFM(1V) pins are outputs for internal reference sources.
-   AdcRegs.ADCTRL3.bit.ADCCLKPS=4;		//Core clock divider	//9.375MHz
+   AdcRegs.ADCTRL3.bit.ADCCLKPS=0xF;		//Core clock divider	//5MHz
    AdcRegs.ADCTRL3.bit.SMODE_SEL=0;	//Sequential sampling mode is selected.
    AdcRegs.ADCMAXCONV.all=0x0F;
    AdcRegs.ADCCHSELSEQ1.bit.CONV00=0x0;	// Ref_1
