@@ -35,17 +35,29 @@ void InitEv(void)
     EvaRegs.DBTCONA.bit.DBT=15; //Dead-band timer period
     EvaRegs.DBTCONA.bit.EDBT1=1;
     EvaRegs.DBTCONA.bit.EDBT2=1;
-    EvaRegs.DBTCONA.bit.EDBT3=1;
     EvaRegs.DBTCONA.bit.DBTPS=7;//Dead-band timer prescaler
 
     EvaRegs.CMPR1=3000;
     EvaRegs.CMPR2=2000;
-    EvaRegs.CMPR3=3749;
     // Width of Deadband is 6.4us.
 
-    EvaRegs.T1PR = 7499;        // Timer1 period
-    EvaRegs.T1CMPR=3749;        // D=50%
+    EvaRegs.T1PR = 7499;    // Timer1 period
+    EvaRegs.T1CMPR=3749;    // D=50%
     EvaRegs.T1CNT=0x3749;
 
-    EvaRegs.EVAIMRA.all=0;
+    EvaRegs.EVAIMRC.bit.CAP1INT=1;  //Enable CAP1 interrupt
+    EvaRegs.EVAIMRC.bit.CAP2INT=1;  //Enable CAP2 interrupt
+
+    EvaRegs.CAPCONA.bit.CAPRES=1;   // Capture Reset
+    EvaRegs.CAPCONA.bit.CAP12EN=1;  //Enable captures 1 and 2
+    EvaRegs.CAPCONA.bit.CAP3EN=0;   //Disable captures 3
+    EvaRegs.CAPCONA.bit.CAP12TSEL=1;//Selects GP timer 1 for captures 1 and 2
+    EvaRegs.CAPCONA.bit.CAP1EDGE=1; //Captures 1 detects rising edge
+    EvaRegs.CAPCONA.bit.CAP2EDGE=2; //Captures 2 detects falling edge
+    EvaRegs.CAPFIFOA.bit.CAP2FIFO=1;// CAP2FIFO has one entry
+    //the EV module is led to "believe" that there is already an entry in the FIFO.
+    //Subsequently, every time the FIFO gets a new value, a capture interrupt will be generated.
+    EvaRegs.CAPFIFOA.bit.CAP1FIFO=1;
+    EvaRegs.CAPFIFOA.bit.CAP1FIFO=1;
+
 }

@@ -46,12 +46,19 @@ main()
 //  Step 4. Initialize all the Device Peripherals:
 //  This function is found in DSP281x_InitPeripherals.c
     InitEv();   // For this example, init the EV
+
+/*  Assumptions: In the process of turning bipolar input to uni-polar input, the Vref must be used as ADCGND.
+*   Still, you shold use bipolar input conversion reference as calibration input. When converting bipolar to
+*   unipolar signals, make sure that the reference voltage used as the mid-point of the ADC range is fed as
+*   an input calibration channel. This removes any bipolar offset error as discussed earlier.
+*/
     InitAdc();  // For this example, init the ADC
 
 //  Step 5. User specific code, enable interrupts:
-//  Enable ADCINT in PIE
-    PieCtrlRegs.PIEIER1.bit.INTx6 = 1;
-    IER |= M_INT1;  // Enable CPU Interrupt 1
+    PieCtrlRegs.PIEIER1.bit.INTx6 = 1;//  Enable ADCINT in PIE
+    PieCtrlRegs.PIEIER3.bit.INTx5 = 1;//  Enable CAP1
+    PieCtrlRegs.PIEIER3.bit.INTx6 = 1;//  Enable CAP2
+    IER |= M_INT1+M_INT3;  // Enable CPU Interrupt 1
     EINT;           // Enable Global interrupt INTM
     ERTM;           // Enable Global realtime interrupt DBGM
 
