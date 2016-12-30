@@ -5,44 +5,42 @@
  *      Author: Noah
  *
  */
-#define GLOBAL_Q 19
 #include "DSP281x_Device.h"
 #include "DSP281x_Examples.h"
 #include "IQmathLib.h"
 #include "DigitalSignalProcessing.h"
 
-_iq ACcurrent[3]={0,0,0};
-_iq DCvoltage[3]={0,0,0};
+_iq26 ACcurrent[3]={0,0,0}; //-2^5 ~ 2^5-2^-26
+_iq22 DCvoltage[3]={0,0,0}; //-2^9 ~ 2^9-2^-22
 
-_iq SetVol;//Defined in SCI ISR.
-_iq DCvoltageError[3]={0,0,0};
-_iq DCvoltageError_1st[3]={0,0,0};//Notch filter
-_iq DCvoltageError_2nd[3]={0,0,0};//Low-pass filter, PI
+_iq22 SetVol;//Defined in SCI ISR.
+_iq25 DCvoltageError_1st[3]={0,0,0};//Notch filter
+_iq25 DCvoltageError_2nd[3]={0,0,0};//Low-pass filter, PI
 
-_iq ACPhase=0x00000000;
-_iq SetPhaseDelay=0x00000000;// Defined in SCI ISR.
-_iq DesiredPhase;
+_iq30 ACPhase=0x00000000;
+_iq30 SetPhaseDelay=0x00000000;
+_iq30 DesiredPhase=0x00000000;
 
-_iq ACcurrentRef;
-_iq ACcurrentError[3]={0,0,0};
-_iq ACcurrentError_1st[3]={0,0,0};
+_iq26 ACcurrentRef=0x00000000;
+_iq29 ACcurrentError_1st[3]={0,0,0};
 
 
 void Processing(int16 newACcurrent, int16 newDCvoltage)
 {
-    _iq temp;
+    _iq25 DCtemp;
+    _iq29 ACtemp;
 
     ACPhase += DeltaPhase;
 
     ACcurrent[2]=ACcurrent[1];
     ACcurrent[1]=ACcurrent[0];
-    ACcurrent[0]=_IQmpy(ACGain,(newACcurrent<<2))+ACOffset;
+    ACcurrent[0]=_IQ26mpyIQX(ACGain, 30, ((long)newACcurrent), 0)+ACOffset;
 
     DCvoltage[2]=DCvoltage[1];
     DCvoltage[1]=DCvoltage[0];
-    DCvoltage[0]=_IQmpy(DCGain,newDCvoltage)+DCOffset;
+    DCvoltage[0]=_IQ22mpyIQX(DCGain, 30, ((long)newDCvoltage), 0)+DCOffset;
 
-    if (DCvoltage[0]<160)
+    if (DCvoltage[0]<_IQ22(160))
     {
         EALLOW;
         GpioMuxRegs.GPAMUX.all=0x0040;
@@ -58,37 +56,45 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
         GpioDataRegs.GPASET.all=0x0010; //Disable the current-limiting resistor
         EDIS;
 
-        temp=-_IQmpy(a2_1st,DCvoltageError_1st[1])-_IQmpy(a3_1st,DCvoltageError_1st[2])+_IQmpy(b1_1st,DCvoltage[0]-SetVol)+_IQmpy(b2_1st,DCvoltage[1]-SetVol)+_IQmpy(b3_1st,DCvoltage[2]-SetVol);
+        DCtemp=-_IQ25mpyIQX(a2_1st, 27, DCvoltageError_1st[1], 25)-_IQ25mpyIQx(a3_1st, 27, DCvoltageError_1st[2], 25)
+                +_IQ25mpyIQx(b1_1st, 27, (DCvoltage[0]-SetVol), 22)+_IQ25mpyIQx(b2_1st, 27, (DCvoltage[1]-SetVol), 22)+_IQ25mpyIQx(b3_1st, 27, (DCvoltage[2]-SetVol), 22);
         DCvoltageError_1st[2]=DCvoltageError_1st[1];
         DCvoltageError_1st[1]=DCvoltageError_1st[0];
-        DCvoltageError_1st[0]=temp;
+        DCvoltageError_1st[0]=DCtemp;
 
-        temp=-_IQmpy(a2_2nd,DCvoltageError_2nd[1])-_IQmpy(a3_2nd,DCvoltageError_2nd[2])+_IQmpy(b1_2nd,DCvoltageError_1st[0])+_IQmpy(b2_2nd,DCvoltageError_1st[1])+_IQmpy(b3_2nd,DCvoltageError_1st[2]);
+        DCtemp=-_IQ25mpyIQx(a2_2nd, 27, DCvoltageError_2nd[1], 25)-_IQ25mpyIQx(a3_2nd, 27, DCvoltageError_2nd[2], 25)
+                +_IQ25mpyIQx(b1_2nd, 27, DCvoltageError_1st[0], 25)+_IQ25mpyIQx(b2_2nd, 27, DCvoltageError_1st[1], 25)+_IQ25mpyIQx(b3_2nd, 27, DCvoltageError_1st[2], 25);
         DCvoltageError_2nd[2]=DCvoltageError_2nd[1];
         DCvoltageError_2nd[1]=DCvoltageError_2nd[0];
-        DCvoltageError_2nd[0]=temp;
-        //DCvoltage_2nd and temp is the ACcurrent amplitude reference
+        DCvoltageError_2nd[0]=DCtemp;
+        //DCvoltage_2nd and DCtemp is the ACcurrent amplitude reference
 
         DesiredPhase = ACPhase+SetPhaseDelay;
-        ACcurrentRef=_IQmpy(temp,_IQsin(DesiredPhase));
+        ACcurrentRef=_IQ26mpyIQx(DCtemp, 25, _IQ30sin(DesiredPhase), 30);
 
-        temp=-_IQmpy(a2_3rd,ACcurrentError_1st[1])-_IQmpy(a3_3rd,ACcurrentError_1st[2])+_IQmpy(b1_3rd,ACcurrent[0]-ACcurrentRef)+_IQmpy(b2_3rd,ACcurrent[1]-ACcurrentRef)+_IQmpy(b3_3rd,ACcurrent[2]-ACcurrentRef);
+        ACtemp=-_IQ29mpyIQx(a2_3rd, 27, ACcurrentError_1st[1], 29)-_IQ29mpyIQx(a3_3rd, 27, ACcurrentError_1st[2], 29)
+                +_IQ29mpyIQx(b1_3rd, 27, (ACcurrent[0]-ACcurrentRef), 26)+_IQ29mpyIQx(b2_3rd, 27, (ACcurrent[1]-ACcurrentRef), 26)+_IQ29mpyIQx(b3_3rd, 27, (ACcurrent[2]-ACcurrentRef), 26);
         ACcurrentError_1st[2]=ACcurrentError_1st[1];
         ACcurrentError_1st[1]=ACcurrentError_1st[0];
-        ACcurrentError_1st[0]=temp;
+        ACcurrentError_1st[0]=ACtemp;
+        //Assumption: ACtemp varies from -1 to 1.
 
-        //EvaRegs.=(unsigned int)_IQint(_IQrsmpy(ACcurrentError_1st[0]+_IQ(1.0),_IQ(3750)));
-        /Edited @ 19:
+        EvaRegs.CMPR1=_IQ15mpyIQx((ACtemp+_IQ29(1.0)), 29, _IQ18(3750))>>15;
+        EvaRegs.CMPR2=EvaRegs.CMPR1;
     }
 }
 void SetPhaseZero(void)
 {
-    ACPhase=0;
+    ACPhase=0x00000000; //0 in _iq30
 }
 void SetPhasePI(void)
 {
-    ACPhase=_IQ(1);
+    ACPhase=0x40000000; //1 in _iq30
 }
 void SetVol_DPhi(Uint8 Vol, int8 DPhi)
 {
+    // Assumptions: DPhi:(-2^7 ~ 2^7-1)*2^2 //_iq-2
+    SetVol=((long)Vol)<<24; // Turn to _iq22
+    // Assumptions: DPhi:(-2^7 ~ 2^7-1)*2^-9//_iq9
+    SetPhaseDelay=((long)DPhi)<<21; // Turn to _iq30
 }
