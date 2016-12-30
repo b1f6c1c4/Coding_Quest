@@ -8,6 +8,12 @@
 #ifndef DIGITALSIGNALPROCESSING_H_
 #define DIGITALSIGNALPROCESSING_H_
 
+#define PI _IQ(3.141592653)
+#define ADCGND _IQ(1.5000)
+#define Ref_1  _IQ(1.0000)
+#define Ref_2  _IQ(2.0000)
+#define DeltaRef    _IQ(1.0000)
+
 #define a1_1st _IQ(1)
 #define a2_1st _IQ(1.000)
 #define a3_1st _IQ(1.000)

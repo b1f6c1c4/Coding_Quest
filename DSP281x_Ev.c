@@ -1,4 +1,4 @@
-#include "DSP281x_Device.h" // DSP281x Headerfile Include File
+#include "DSP281x_Device.h"     // DSP281x Headerfile Include File
 #include "DSP281x_Examples.h"   // DSP281x Examples Include File
 
 //---------------------------------------------------------------------------
@@ -20,12 +20,12 @@ void InitEv(void)
     EvaRegs.T1CON.bit.TCLKS10=0;//Clock source:HSPCLK
     EvaRegs.T1CON.bit.TENABLE=1;//Timer enable
     EvaRegs.T1CON.bit.TCLD10=1; //Timer compare register reload condition
-    //When counter value is 0 or equals period register value
+    // When counter value is 0 or equals period register value
     EvaRegs.T1CON.bit.TECMPR=1; //Enable timer compare operation
 
     EvaRegs.COMCONA.bit.CENABLE=1;  //Compare enable
     EvaRegs.COMCONA.bit.CLD=1;      //Compare register CMPRx reload condition:
-    //When T1CNT = 0 or T1CNT = T1PR (that is, on underflow or period match)
+    // When T1CNT = 0 or T1CNT = T1PR (that is, on underflow or period match)
     EvaRegs.COMCONA.bit.SVENABLE=0; //Disables space vector PWM mode
     EvaRegs.COMCONA.bit.ACTRLD=1;   //Action control register reload condition
     EvaRegs.COMCONA.bit.FCOMPOE=1;  //Full compare outputs, PWM1/2/3/4/5/6, are driven by corresponding compare logic
