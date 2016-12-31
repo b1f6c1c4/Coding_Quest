@@ -2,9 +2,9 @@
 // Checkin $Date: April 29, 2005   11:08:53 $
 //###########################################################################
 //
-// FILE:	DSP281x_PieVect.c
+// FILE:    DSP281x_PieVect.c
 //
-// TITLE:	DSP281x Devices PIE Vector Table Initialization Functions.
+// TITLE:   DSP281x Devices PIE Vector Table Initialization Functions.
 //
 //###########################################################################
 // $TI Release: DSP281x C/C++ Header Files V1.20 $
@@ -17,18 +17,18 @@
 const struct PIE_VECT_TABLE PieVectTableInit = {
 
       PIE_RESERVED,  // Reserved space
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
-      PIE_RESERVED,   
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
+      PIE_RESERVED,
 
 
 // Non-Peripheral Interrupts
@@ -56,7 +56,7 @@ const struct PIE_VECT_TABLE PieVectTableInit = {
       PDPINTA_ISR,   // EV-A
       PDPINTB_ISR,   // EV-B
       rsvd_ISR,
-      XINT1_ISR,     
+      XINT1_ISR,
       XINT2_ISR,
       ADCINT_ISR,    // ADC
       TINT0_ISR,     // Timer 0
@@ -71,7 +71,7 @@ const struct PIE_VECT_TABLE PieVectTableInit = {
       T1UFINT_ISR,   // EV-A
       T1OFINT_ISR,   // EV-A
       rsvd_ISR,
-      
+
 // Group 3 PIE Vectors
       T2PINT_ISR,    // EV-A
       T2CINT_ISR,    // EV-A
@@ -81,7 +81,7 @@ const struct PIE_VECT_TABLE PieVectTableInit = {
       CAPINT2_ISR,   // EV-A
       CAPINT3_ISR,   // EV-A
       rsvd_ISR,
-      
+
 // Group 4 PIE Vectors
       CMP4INT_ISR,   // EV-B
       CMP5INT_ISR,   // EV-B
@@ -90,8 +90,8 @@ const struct PIE_VECT_TABLE PieVectTableInit = {
       T3CINT_ISR,    // EV-B
       T3UFINT_ISR,   // EV-B
       T3OFINT_ISR,   // EV-B
-      rsvd_ISR,      
-     
+      rsvd_ISR,
+
 // Group 5 PIE Vectors
       T4PINT_ISR,    // EV-B
       T4CINT_ISR,    // EV-B
@@ -100,7 +100,7 @@ const struct PIE_VECT_TABLE PieVectTableInit = {
       CAPINT4_ISR,   // EV-B
       CAPINT5_ISR,   // EV-B
       CAPINT6_ISR,   // EV-B
-      rsvd_ISR,      
+      rsvd_ISR,
 
 // Group 6 PIE Vectors
       SPIRXINTA_ISR,   // SPI-A
@@ -111,71 +111,71 @@ const struct PIE_VECT_TABLE PieVectTableInit = {
       MXINTA_ISR,    // McBSP-A
       rsvd_ISR,
       rsvd_ISR,
-      
+
 // Group 7 PIE Vectors
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
 
 // Group 8 PIE Vectors
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      
-// Group 9 PIE Vectors     
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+
+// Group 9 PIE Vectors
       SCIRXINTA_ISR, // SCI-A
       SCITXINTA_ISR, // SCI-A
       SCIRXINTB_ISR, // SCI-B
       SCITXINTB_ISR, // SCI-B
       ECAN0INTA_ISR, // eCAN
       ECAN1INTA_ISR, // eCAN
-      rsvd_ISR,   
-      rsvd_ISR,   
-      
+      rsvd_ISR,
+      rsvd_ISR,
+
 // Group 10 PIE Vectors
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-            
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+
 // Group 11 PIE Vectors
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
 
 // Group 12 PIE Vectors
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
-      rsvd_ISR,   
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
+      rsvd_ISR,
 };
 
 
 //---------------------------------------------------------------------------
-// InitPieVectTable: 
+// InitPieVectTable:
 //---------------------------------------------------------------------------
 // This function initializes the PIE vector table to a known state.
 // This function must be executed after boot time.
@@ -183,18 +183,18 @@ const struct PIE_VECT_TABLE PieVectTableInit = {
 
 void InitPieVectTable(void)
 {
-	int16	i;
-	Uint32 *Source = (void *) &PieVectTableInit;
-	Uint32 *Dest = (void *) &PieVectTable;
-		
-	EALLOW;	
-	for(i=0; i < 128; i++)
-		*Dest++ = *Source++;	
-	EDIS;
+    int16   i;
+    Uint32 *Source = (void *) &PieVectTableInit;
+    Uint32 *Dest = (void *) &PieVectTable;
 
-	// Enable the PIE Vector Table
-	PieCtrlRegs.PIECRTL.bit.ENPIE = 1;	
-			
+    EALLOW;
+    for(i=0; i < 128; i++)
+        *Dest++ = *Source++;
+    EDIS;
+
+    // Enable the PIE Vector Table
+    PieCtrlRegs.PIECRTL.bit.ENPIE = 1;
+
 }
 
 //===========================================================================
