@@ -129,7 +129,6 @@ interrupt void  XINT2_ISR(void)
     for(;;);
 }
 // INT1.6
-void Processing(int16 newACcurrent, int16 newDCvoltage);
 interrupt void  ADCINT_ISR(void)    // ADC
 {
     AdcRegs.ADCST.bit.INT_SEQ1_CLR = 1;

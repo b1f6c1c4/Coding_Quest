@@ -1,5 +1,5 @@
 /*
- * DigitalSignalProcessing.c
+ * CtrlUnit.c
  *
  *  Created on: 2016-11-26
  *      Author: Noah
@@ -8,7 +8,7 @@
 #include "DSP281x_Device.h"
 #include "DSP281x_Examples.h"
 #include "IQmathLib.h"
-#include "DigitalSignalProcessing.h"
+#include "CtrlUnit.h"
 
 _iq26 ACcurrent[3]={0,0,0}; //-2^5 ~ 2^5-2^-26
 _iq22 DCvoltage[3]={0,0,0}; //-2^9 ~ 2^9-2^-22
