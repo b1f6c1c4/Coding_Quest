@@ -16,10 +16,10 @@ void InitPeripherals(void)
 
 //  Initialize Event Manager Peripheral To default State:
     InitEv();
-    
+
 //  Initialize ADC Peripheral To default State:
     InitAdc();
-    
+
 //  Initialize eCAN Peripheral To default State:
     //InitECan();
 
