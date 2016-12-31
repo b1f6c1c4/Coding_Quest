@@ -21,18 +21,18 @@
 //
 void InitGpio(void)
 {
-// Set GPIO A port pins,AL(Bits 7:0)(input)-AH(Bits 15:8) (output) 8bits
-// Input Qualifier =0, none
+    // Set GPIO A port pins,AL(Bits 7:0)(input)-AH(Bits 15:8) (output) 8bits
+    // Input Qualifier = 0, none
     EALLOW;
-    GpioMuxRegs.GPAMUX.all=0x0340;
-    //Enable CAP1-2; Enable EVA Timer1CMP; Disable PWM1-4 output.
+    GpioMuxRegs.GPAMUX.all = 0x0340;
+    // Enable CAP1-2; Enable EVA Timer1CMP; Disable PWM1-4 output.
 
-    GpioMuxRegs.GPADIR.all=0x003F;
-    GpioDataRegs.GPACLEAR.all=0x003F;
-    //GPIOA4:Short the current-limiting resistor? Now the resistor is Enabled.
-    //GPIOA5:The Phase Indicator;
-    //Assumption: setting 1 is dangerous (Disable the current-limiting resistor)
-    //and enable PWM1-4;
+    GpioMuxRegs.GPADIR.all    = 0x003F;
+    GpioDataRegs.GPACLEAR.all = 0x003F;
+    // GPIOA4:Short the current-limiting resistor? Now the resistor is Enabled.
+    // GPIOA5:The Phase Indicator;
+    // Assumption: setting 1 is dangerous (Disable the current-limiting resistor)
+    // and enable PWM1-4;
 
     // GpioMuxRegs.GPFMUX.bit.SCIRXDA_GPIOF5=1;
     // GpioMuxRegs.GPFMUX.bit.SCITXDA_GPIOF4=0;
