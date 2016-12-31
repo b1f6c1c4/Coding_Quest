@@ -129,23 +129,7 @@ interrupt void  XINT2_ISR(void)
     for(;;);
 }
 // INT1.6
-interrupt void  ADCINT_ISR(void)    // ADC
-{
-    AdcRegs.ADCST.bit.INT_SEQ1_CLR = 1;
-    AdcRegs.ADCST.bit.INT_SEQ2_CLR = 1;
-    AdcRegs.ADCTRL2.bit.RST_SEQ1 = 1;
-    AdcRegs.ADCTRL2.bit.RST_SEQ2 = 1;
-    int16 ACcurrent;
-    int16 DCvoltage;
-    ACcurrent = (AdcRegs.ADCRESULT4>>4)+(AdcRegs.ADCRESULT5>>4)+(AdcRegs.ADCRESULT6>>4)
-          +(AdcRegs.ADCRESULT7>>4)+(AdcRegs.ADCRESULT8>>4)+(AdcRegs.ADCRESULT9>>4)
-          +(AdcRegs.ADCRESULT10>>4)+(AdcRegs.ADCRESULT11>>4);
-    DCvoltage = (AdcRegs.ADCRESULT0>>4)+(AdcRegs.ADCRESULT1>>4)+(AdcRegs.ADCRESULT2>>4)
-             +(AdcRegs.ADCRESULT3>>4)+(AdcRegs.ADCRESULT12>>4)+(AdcRegs.ADCRESULT13>>4)
-             +(AdcRegs.ADCRESULT14>>4)+(AdcRegs.ADCRESULT15>>4);
-    Processing(ACcurrent, DCvoltage);
-    PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
-}
+// Moved to DSP281x_Adc.c
 // INT1.7
 interrupt void  TINT0_ISR(void)     // CPU-Timer 0
 {
@@ -431,27 +415,7 @@ interrupt void MXINTA_ISR(void)    // McBSP-A
 // PIE Group 9 - MUXed into CPU INT9
 // -----------------------------------------------------------
 // INT9.1
-long SettingVoltage=250;
-long DesiredPhaseDelay=0;
-interrupt void SCIRXINTA_ISR(void)    // SCI-A
-{
-    char temp1,temp2,temp4;
-    signed char temp3;
-    temp1=SciaRegs.SCIRXBUF.all;
-    temp2=SciaRegs.SCIRXBUF.all;
-    temp3=SciaRegs.SCIRXBUF.all;
-    temp4=SciaRegs.SCIRXBUF.all;
-    if ((temp1==0x62) && (temp4==0x65))
-    {
-        SettingVoltage=((long) temp2)<<24;
-        DesiredPhaseDelay=((long) temp3)<<24;
-    }
-    SciaRegs.SCIFFRX.bit.RXFIFORESET=0;//Reset the FIFO pointer to zero, and hold in reset.
-    SciaRegs.SCIFFRX.bit.RXFIFORESET=1;//Re-enable receive FIFO operation
-    PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
-//   asm ("     ESTOP0");
-//   for(;;);
-}
+// Moved to DSP281x_Sci.c
 // INT9.2
 interrupt void SCITXINTA_ISR(void)    // SCI-A
 {

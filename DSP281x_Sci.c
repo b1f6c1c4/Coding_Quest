@@ -36,3 +36,26 @@ void InitSci(void)
 
     SciaRegs.SCICTL1.bit.SWRESET=1;
 }
+
+long g_SettingVoltage=250;
+long g_DesiredPhaseDelay=0;
+
+interrupt void SCIRXINTA_ISR(void)    // SCI-A
+{
+    char temp1,temp2,temp4;
+    signed char temp3;
+    temp1=SciaRegs.SCIRXBUF.all;
+    temp2=SciaRegs.SCIRXBUF.all;
+    temp3=SciaRegs.SCIRXBUF.all;
+    temp4=SciaRegs.SCIRXBUF.all;
+    if ((temp1==0x62) && (temp4==0x65))
+    {
+        g_SettingVoltage=((long) temp2)<<24;
+        g_DesiredPhaseDelay=((long) temp3)<<24;
+    }
+    SciaRegs.SCIFFRX.bit.RXFIFORESET=0;//Reset the FIFO pointer to zero, and hold in reset.
+    SciaRegs.SCIFFRX.bit.RXFIFORESET=1;//Re-enable receive FIFO operation
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
+//   asm ("     ESTOP0");
+//   for(;;);
+}
