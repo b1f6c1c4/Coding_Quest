@@ -10,6 +10,27 @@
 #include "IQmathLib.h"
 #include "CtrlUnit.h"
 
+#define a1_1st _IQ27(1.0)
+#define a2_1st _IQ27(1.0)
+#define a3_1st _IQ27(1.0)
+#define b1_1st _IQ27(1.0)
+#define b2_1st _IQ27(1.0)
+#define b3_1st _IQ27(1.0)
+
+#define a1_2nd _IQ27(1.0)
+#define a2_2nd _IQ27(1.0)
+#define a3_2nd _IQ27(1.0)
+#define b1_2nd _IQ27(1.0)
+#define b2_2nd _IQ27(1.0)
+#define b3_2nd _IQ27(1.0)
+
+#define a1_3rd _IQ27(1.0)
+#define a2_3rd _IQ27(1.0)
+#define a3_3rd _IQ27(1.0)
+#define b1_3rd _IQ27(1.0)
+#define b2_3rd _IQ27(1.0)
+#define b3_3rd _IQ27(1.0)
+
 _iq26 ACcurrent[3]={0,0,0}; //-2^5 ~ 2^5-2^-26
 _iq22 DCvoltage[3]={0,0,0}; //-2^9 ~ 2^9-2^-22
 
@@ -24,12 +45,12 @@ _iq30 DesiredPhase=0x00000000;
 _iq26 ACcurrentRef=0x00000000;
 _iq29 ACcurrentError_1st[3]={0,0,0};
 
+void ControlledRect();
+void UncontrolledRect();
+int16 Filters();
 
 void Processing(int16 newACcurrent, int16 newDCvoltage)
 {
-    _iq25 DCtemp;
-    _iq29 ACtemp;
-
     ACPhase += DeltaPhase;
 
     ACcurrent[2]=ACcurrent[1];
@@ -42,59 +63,79 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
 
     if (DCvoltage[0]<_IQ22(160))
     {
-        EALLOW;
-        GpioMuxRegs.GPAMUX.all=0x0040;
-        GpioMuxRegs.GPADIR.all=0x00FF;
-        GpioDataRegs.GPACLEAR.all=0x00FF;
-        EDIS;
+        UncontrolledRect();
+        return;
     }
-    else
-    {
-        EALLOW;
-        GpioMuxRegs.GPAMUX.all=0x004F;
-        GpioMuxRegs.GPADIR.all=0x0030;
-        GpioDataRegs.GPASET.all=0x0010; //Disable the current-limiting resistor
-        EDIS;
 
-        DCtemp=-_IQ25mpyIQX(a2_1st, 27, DCvoltageError_1st[1], 25)-_IQ25mpyIQx(a3_1st, 27, DCvoltageError_1st[2], 25)
-                +_IQ25mpyIQx(b1_1st, 27, (DCvoltage[0]-SetVol), 22)+_IQ25mpyIQx(b2_1st, 27, (DCvoltage[1]-SetVol), 22)+_IQ25mpyIQx(b3_1st, 27, (DCvoltage[2]-SetVol), 22);
-        DCvoltageError_1st[2]=DCvoltageError_1st[1];
-        DCvoltageError_1st[1]=DCvoltageError_1st[0];
-        DCvoltageError_1st[0]=DCtemp;
+    int16 cmpr = Filters();
 
-        DCtemp=-_IQ25mpyIQx(a2_2nd, 27, DCvoltageError_2nd[1], 25)-_IQ25mpyIQx(a3_2nd, 27, DCvoltageError_2nd[2], 25)
-                +_IQ25mpyIQx(b1_2nd, 27, DCvoltageError_1st[0], 25)+_IQ25mpyIQx(b2_2nd, 27, DCvoltageError_1st[1], 25)+_IQ25mpyIQx(b3_2nd, 27, DCvoltageError_1st[2], 25);
-        DCvoltageError_2nd[2]=DCvoltageError_2nd[1];
-        DCvoltageError_2nd[1]=DCvoltageError_2nd[0];
-        DCvoltageError_2nd[0]=DCtemp;
-        //DCvoltage_2nd and DCtemp is the ACcurrent amplitude reference
-
-        DesiredPhase = ACPhase+SetPhaseDelay;
-        ACcurrentRef=_IQ26mpyIQx(DCtemp, 25, _IQ30sin(DesiredPhase), 30);
-
-        ACtemp=-_IQ29mpyIQx(a2_3rd, 27, ACcurrentError_1st[1], 29)-_IQ29mpyIQx(a3_3rd, 27, ACcurrentError_1st[2], 29)
-                +_IQ29mpyIQx(b1_3rd, 27, (ACcurrent[0]-ACcurrentRef), 26)+_IQ29mpyIQx(b2_3rd, 27, (ACcurrent[1]-ACcurrentRef), 26)+_IQ29mpyIQx(b3_3rd, 27, (ACcurrent[2]-ACcurrentRef), 26);
-        ACcurrentError_1st[2]=ACcurrentError_1st[1];
-        ACcurrentError_1st[1]=ACcurrentError_1st[0];
-        ACcurrentError_1st[0]=ACtemp;
-        //Assumption: ACtemp varies from -1 to 1.
-
-        EvaRegs.CMPR1=_IQ15mpyIQx((ACtemp+_IQ29(1.0)), 29, _IQ18(3750))>>15;
-        EvaRegs.CMPR2=EvaRegs.CMPR1;
-    }
+    EvaRegs.CMPR1 = cmpr;
+    EvaRegs.CMPR2 = cmpr;
 }
+
+int16 Filters()
+{
+    _iq25 DCtemp;
+    _iq29 ACtemp;
+
+    DCtemp=-_IQ25mpyIQX(a2_1st, 27, DCvoltageError_1st[1], 25)-_IQ25mpyIQx(a3_1st, 27, DCvoltageError_1st[2], 25)
+            +_IQ25mpyIQx(b1_1st, 27, (DCvoltage[0]-SetVol), 22)+_IQ25mpyIQx(b2_1st, 27, (DCvoltage[1]-SetVol), 22)+_IQ25mpyIQx(b3_1st, 27, (DCvoltage[2]-SetVol), 22);
+    DCvoltageError_1st[2]=DCvoltageError_1st[1];
+    DCvoltageError_1st[1]=DCvoltageError_1st[0];
+    DCvoltageError_1st[0]=DCtemp;
+
+    DCtemp=-_IQ25mpyIQx(a2_2nd, 27, DCvoltageError_2nd[1], 25)-_IQ25mpyIQx(a3_2nd, 27, DCvoltageError_2nd[2], 25)
+            +_IQ25mpyIQx(b1_2nd, 27, DCvoltageError_1st[0], 25)+_IQ25mpyIQx(b2_2nd, 27, DCvoltageError_1st[1], 25)+_IQ25mpyIQx(b3_2nd, 27, DCvoltageError_1st[2], 25);
+    DCvoltageError_2nd[2]=DCvoltageError_2nd[1];
+    DCvoltageError_2nd[1]=DCvoltageError_2nd[0];
+    DCvoltageError_2nd[0]=DCtemp;
+    //DCvoltage_2nd and DCtemp is the ACcurrent amplitude reference
+
+    DesiredPhase = ACPhase+SetPhaseDelay;
+    ACcurrentRef=_IQ26mpyIQx(DCtemp, 25, _IQ30sin(DesiredPhase), 30);
+
+    ACtemp=-_IQ29mpyIQx(a2_3rd, 27, ACcurrentError_1st[1], 29)-_IQ29mpyIQx(a3_3rd, 27, ACcurrentError_1st[2], 29)
+            +_IQ29mpyIQx(b1_3rd, 27, (ACcurrent[0]-ACcurrentRef), 26)+_IQ29mpyIQx(b2_3rd, 27, (ACcurrent[1]-ACcurrentRef), 26)+_IQ29mpyIQx(b3_3rd, 27, (ACcurrent[2]-ACcurrentRef), 26);
+    ACcurrentError_1st[2]=ACcurrentError_1st[1];
+    ACcurrentError_1st[1]=ACcurrentError_1st[0];
+    ACcurrentError_1st[0]=ACtemp;
+    //Assumption: ACtemp varies from -1 to 1.
+
+    return _IQ15mpyIQx((ACtemp+_IQ29(1.0)), 29, _IQ18(3750))>>15;
+}
+
 void SetPhaseZero(void)
 {
     ACPhase=0x00000000; //0 in _iq30
 }
+
 void SetPhasePI(void)
 {
     ACPhase=0x40000000; //1 in _iq30
 }
+
 void SetVol_DPhi(Uint8 Vol, int8 DPhi)
 {
     // Assumptions: DPhi:(-2^7 ~ 2^7-1)*2^2 //_iq-2
     SetVol=((long)Vol)<<24; // Turn to _iq22
     // Assumptions: DPhi:(-2^7 ~ 2^7-1)*2^-9//_iq9
     SetPhaseDelay=((long)DPhi)<<21; // Turn to _iq30
+}
+
+void ControlledRect()
+{
+    EALLOW;
+    GpioMuxRegs.GPAMUX.all=0x004F;
+    GpioMuxRegs.GPADIR.all=0x0030;
+    GpioDataRegs.GPASET.all=0x0010; //Disable the current-limiting resistor
+    EDIS;
+}
+
+void UncontrolledRect()
+{
+    EALLOW;
+    GpioMuxRegs.GPAMUX.all=0x0040;
+    GpioMuxRegs.GPADIR.all=0x00FF;
+    GpioDataRegs.GPACLEAR.all=0x00FF;
+    EDIS;
 }
