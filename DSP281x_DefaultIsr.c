@@ -227,19 +227,9 @@ interrupt void T2OFINT_ISR(void)    // EV-A
     for(;;);
 }
 // INT3.5
-interrupt void CAPINT1_ISR(void)    // EV-A
-{
-  // PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
-    asm ("     ESTOP0");
-    for(;;);
-}
+// Moved to DSP281x_Ev.c
 // INT3.6
-interrupt void CAPINT2_ISR(void)    // EV-A
-{
-  // PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
-    asm ("     ESTOP0");
-    for(;;);
-}
+// Moved to DSP281x_Ev.c
 // INT3.7
 interrupt void CAPINT3_ISR(void)    // EV-A
 {

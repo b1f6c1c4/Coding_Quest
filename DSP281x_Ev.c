@@ -1,5 +1,6 @@
 #include "DSP281x_Device.h"     // DSP281x Headerfile Include File
 #include "DSP281x_Examples.h"   // DSP281x Examples Include File
+#include "CtrlUnit.h"
 
 //---------------------------------------------------------------------------
 // InitEv:
@@ -61,3 +62,22 @@ void InitEv(void)
     EvaRegs.CAPFIFOA.bit.CAP1FIFO = 1;
 
 }
+interrupt void CAPINT1_ISR(void)    // EV-A
+{
+    SetPhaseZero();
+    EvaRegs.EVAIFRC.bit.CAP1INT=1;
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
+    EALLOW;
+    GpioDataRegs.GPASET.bit.GPIOA5=1;
+    EDIS;
+}
+interrupt void CAPINT2_ISR(void)    // EV-A
+{
+    SetPhaseZero();
+    EvaRegs.EVAIFRC.bit.CAP2INT=1;
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
+    EALLOW;
+    GpioDataRegs.GPACLEAR.bit.GPIOA5=1;
+    EDIS;
+}
+

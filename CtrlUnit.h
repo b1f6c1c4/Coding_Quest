@@ -11,5 +11,7 @@
 #define DeltaPhase 536871   // 10us / 20ms * 2^30
 
 void Processing(int16 newACcurrent, int16 newDCvoltage);
+void SetPhaseZero(void);
+void SetPhasePI(void);
 
 #endif /* CTRLUNIT_H_ */
