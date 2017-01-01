@@ -5,7 +5,9 @@
 #define ADC_usDELAY2 20L
 extern void DSP28x_usDelay(Uint32 Count);
 
+#define ADCGND  0x0
 #define DC_VOLT 0x2
+#define AC_REF  0x3
 #define AC_CURR 0x4
 
 // This function initializes ADC to a known state.
@@ -54,27 +56,29 @@ void InitAdc(void)
     AdcRegs.ADCTRL3.bit.SMODE_SEL = 0;   // Sequential sampling mode is selected.
     AdcRegs.ADCMAXCONV.all        = 0x0F;
 
-    AdcRegs.ADCCHSELSEQ1.bit.CONV00 = DC_VOLT;
-    AdcRegs.ADCCHSELSEQ1.bit.CONV01 = DC_VOLT;
+    AdcRegs.ADCCHSELSEQ1.bit.CONV00 = ADCGND;
+    AdcRegs.ADCCHSELSEQ1.bit.CONV01 = AC_REF;
     AdcRegs.ADCCHSELSEQ1.bit.CONV02 = DC_VOLT;
     AdcRegs.ADCCHSELSEQ1.bit.CONV03 = DC_VOLT;
-    AdcRegs.ADCCHSELSEQ2.bit.CONV04 = AC_CURR;
+    AdcRegs.ADCCHSELSEQ2.bit.CONV04 = DC_VOLT;
     AdcRegs.ADCCHSELSEQ2.bit.CONV05 = AC_CURR;
     AdcRegs.ADCCHSELSEQ2.bit.CONV06 = AC_CURR;
     AdcRegs.ADCCHSELSEQ2.bit.CONV07 = AC_CURR;
     AdcRegs.ADCCHSELSEQ3.bit.CONV08 = AC_CURR;
     AdcRegs.ADCCHSELSEQ3.bit.CONV09 = AC_CURR;
     AdcRegs.ADCCHSELSEQ3.bit.CONV10 = AC_CURR;
-    AdcRegs.ADCCHSELSEQ3.bit.CONV11 = AC_CURR;
+    AdcRegs.ADCCHSELSEQ3.bit.CONV11 = DC_VOLT;
     AdcRegs.ADCCHSELSEQ4.bit.CONV12 = DC_VOLT;
     AdcRegs.ADCCHSELSEQ4.bit.CONV13 = DC_VOLT;
-    AdcRegs.ADCCHSELSEQ4.bit.CONV14 = DC_VOLT;
-    AdcRegs.ADCCHSELSEQ4.bit.CONV15 = DC_VOLT;
+    AdcRegs.ADCCHSELSEQ4.bit.CONV14 = AC_REF;
+    AdcRegs.ADCCHSELSEQ4.bit.CONV15 = ADCGND;
 }
 
 void Processing(int16, int16);
 interrupt void  ADCINT_ISR(void)    // ADC
 {
+    int16 ground = 0;
+    int16 AC_Reference = 0;
     int16 ACcurrent = 0;
     int16 DCvoltage = 0;
 
@@ -83,22 +87,26 @@ interrupt void  ADCINT_ISR(void)    // ADC
     AdcRegs.ADCTRL2.bit.RST_SEQ1 = 1;
     AdcRegs.ADCTRL2.bit.RST_SEQ2 = 1;
 
-    DCvoltage += AdcRegs.ADCRESULT0  >> 4;
-    DCvoltage += AdcRegs.ADCRESULT1  >> 4;
+    ground += AdcRegs.ADCRESULT0  >> 4;
+    AC_Reference += AdcRegs.ADCRESULT1  >> 4;
     DCvoltage += AdcRegs.ADCRESULT2  >> 4;
     DCvoltage += AdcRegs.ADCRESULT3  >> 4;
-    ACcurrent += AdcRegs.ADCRESULT4  >> 4;
+    DCvoltage += AdcRegs.ADCRESULT4  >> 4;
     ACcurrent += AdcRegs.ADCRESULT5  >> 4;
     ACcurrent += AdcRegs.ADCRESULT6  >> 4;
     ACcurrent += AdcRegs.ADCRESULT7  >> 4;
     ACcurrent += AdcRegs.ADCRESULT8  >> 4;
     ACcurrent += AdcRegs.ADCRESULT9  >> 4;
     ACcurrent += AdcRegs.ADCRESULT10 >> 4;
-    ACcurrent += AdcRegs.ADCRESULT11 >> 4;
+    DCvoltage += AdcRegs.ADCRESULT11 >> 4;
     DCvoltage += AdcRegs.ADCRESULT12 >> 4;
     DCvoltage += AdcRegs.ADCRESULT13 >> 4;
-    DCvoltage += AdcRegs.ADCRESULT14 >> 4;
-    DCvoltage += AdcRegs.ADCRESULT15 >> 4;
+    AC_Reference += AdcRegs.ADCRESULT14 >> 4;
+    ground += AdcRegs.ADCRESULT15 >> 4;
+
+    //The reason for the 3 factor: Different channels.
+    DCvoltage -= ADCGND + 3*ground;
+    ACcurrent -= ADCGND + 3*ground + 3*AC_Reference;
 
     Processing(ACcurrent, DCvoltage);
 
