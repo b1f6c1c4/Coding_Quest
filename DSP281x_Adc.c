@@ -72,32 +72,33 @@ void InitAdc(void)
     AdcRegs.ADCCHSELSEQ4.bit.CONV15 = DC_VOLT;
 }
 
+void Processing(int16, int16);
 interrupt void  ADCINT_ISR(void)    // ADC
 {
+    int16 ACcurrent = 0;
+    int16 DCvoltage = 0;
+
     AdcRegs.ADCST.bit.INT_SEQ1_CLR = 1;
     AdcRegs.ADCST.bit.INT_SEQ2_CLR = 1;
     AdcRegs.ADCTRL2.bit.RST_SEQ1 = 1;
     AdcRegs.ADCTRL2.bit.RST_SEQ2 = 1;
 
-    int16 ACcurrent = 0;
-    int16 DCvoltage = 0;
-
-    DCvoltage + = AdcRegs.ADCRESULT0  >> 4;
-    DCvoltage + = AdcRegs.ADCRESULT1  >> 4;
-    DCvoltage + = AdcRegs.ADCRESULT2  >> 4;
-    DCvoltage + = AdcRegs.ADCRESULT3  >> 4;
-    ACcurrent + = AdcRegs.ADCRESULT4  >> 4;
-    ACcurrent + = AdcRegs.ADCRESULT5  >> 4;
-    ACcurrent + = AdcRegs.ADCRESULT6  >> 4;
-    ACcurrent + = AdcRegs.ADCRESULT7  >> 4;
-    ACcurrent + = AdcRegs.ADCRESULT8  >> 4;
-    ACcurrent + = AdcRegs.ADCRESULT9  >> 4;
-    ACcurrent + = AdcRegs.ADCRESULT10 >> 4;
-    ACcurrent + = AdcRegs.ADCRESULT11 >> 4;
-    DCvoltage + = AdcRegs.ADCRESULT12 >> 4;
-    DCvoltage + = AdcRegs.ADCRESULT13 >> 4;
-    DCvoltage + = AdcRegs.ADCRESULT14 >> 4;
-    DCvoltage + = AdcRegs.ADCRESULT15 >> 4;
+    DCvoltage += AdcRegs.ADCRESULT0  >> 4;
+    DCvoltage += AdcRegs.ADCRESULT1  >> 4;
+    DCvoltage += AdcRegs.ADCRESULT2  >> 4;
+    DCvoltage += AdcRegs.ADCRESULT3  >> 4;
+    ACcurrent += AdcRegs.ADCRESULT4  >> 4;
+    ACcurrent += AdcRegs.ADCRESULT5  >> 4;
+    ACcurrent += AdcRegs.ADCRESULT6  >> 4;
+    ACcurrent += AdcRegs.ADCRESULT7  >> 4;
+    ACcurrent += AdcRegs.ADCRESULT8  >> 4;
+    ACcurrent += AdcRegs.ADCRESULT9  >> 4;
+    ACcurrent += AdcRegs.ADCRESULT10 >> 4;
+    ACcurrent += AdcRegs.ADCRESULT11 >> 4;
+    DCvoltage += AdcRegs.ADCRESULT12 >> 4;
+    DCvoltage += AdcRegs.ADCRESULT13 >> 4;
+    DCvoltage += AdcRegs.ADCRESULT14 >> 4;
+    DCvoltage += AdcRegs.ADCRESULT15 >> 4;
 
     Processing(ACcurrent, DCvoltage);
 

@@ -7,8 +7,13 @@
  */
 #include "DSP281x_Device.h"
 #include "DSP281x_Examples.h"
-#include "IQmathLib.h"
 #include "CtrlUnit.h"
+#include "IQmathLib.h"
+
+#define ACGain _IQ30(0.001953125)   // Number in the parenthesis take A/ACcurrent as units
+#define ACOffset _IQ26(0.0) // Number in the parenthesis take Ampere as units
+#define DCGain _IQ30(0.015625)      // Number in the parenthesis take V/DCvoltage as units
+#define DCOffset _IQ22(0.0) // Number in the parenthesis take Voltage as units
 
 #define a1_1st _IQ27(1.0)
 #define a2_1st _IQ27(1.0)
