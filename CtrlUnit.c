@@ -52,7 +52,7 @@ _iq29 ACcurrentError_1st[3] = {0,0,0};
 
 void ControlledRect();
 void UncontrolledRect();
-int16 Filters();
+int16 Filters(void);
 
 void Processing(int16 newACcurrent, int16 newDCvoltage)
 {
@@ -78,9 +78,10 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
 
     EvaRegs.CMPR1 = cmpr;
     EvaRegs.CMPR2 = cmpr;
+    ControlledRect();
 }
 
-int16 Filters()
+int16 Filters(void)
 {
     _iq25 DCtemp;
     _iq29 ACtemp;
