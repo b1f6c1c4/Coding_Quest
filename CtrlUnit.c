@@ -10,8 +10,8 @@
 #include "CtrlUnit.h"
 #include "IQmathLib.h"
 
-#define ACGain _IQ30(0.001953125)   // Number in the parenthesis take A/ACcurrent as units
-#define ACOffset _IQ26(0.0) // Number in the parenthesis take Ampere as units
+#define ACGain _IQ30(0.0002275)   // Number in the parenthesis take A/ACcurrent as units
+#define ACOffset _IQ26(-3.4613) // Number in the parenthesis take Ampere as units
 #define DCGain _IQ30(0.015625)      // Number in the parenthesis take V/DCvoltage as units
 #define DCOffset _IQ22(0.0) // Number in the parenthesis take Voltage as units
 
@@ -36,8 +36,8 @@
 #define b2_3rd _IQ27(1.0)
 #define b3_3rd _IQ27(1.0)
 
-_iq26 ACcurrent[3] = {0,0,0}; // -2^5 ~ 2^5-2^-26
-_iq22 DCvoltage[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
+static _iq26 ACcurrent[3] = {0,0,0}; // -2^5 ~ 2^5-2^-26
+static _iq22 DCvoltage[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
 
 _iq22 SetVol;                          // Defined in SCI ISR.
 _iq25 DCvoltageError_1st[3] = {0,0,0}; // Notch filter
