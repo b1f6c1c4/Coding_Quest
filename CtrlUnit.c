@@ -8,120 +8,121 @@
 #include "DSP281x_Device.h"
 #include "DSP281x_Examples.h"
 #include "CtrlUnit.h"
-#include "IQmathLib.h"
 
 #define ACGain _IQ30(0.0002275)   // Number in the parenthesis take A/ACcurrent as units
 #define ACOffset _IQ26(-3.4613) // Number in the parenthesis take Ampere as units
 #define DCGain _IQ30(0.015625)      // Number in the parenthesis take V/DCvoltage as units
 #define DCOffset _IQ22(0.0) // Number in the parenthesis take Voltage as units
 
-#define a1_1st _IQ27(1.0)
-#define a2_1st _IQ27(1.0)
-#define a3_1st _IQ27(1.0)
-#define b1_1st _IQ27(1.0)
-#define b2_1st _IQ27(1.0)
-#define b3_1st _IQ27(1.0)
+#define SampPeri _IQ30(0.0001)
+#define ACKp     _IQ28(2.5)
+#define ACKi     _IQ29(0.5)
+#define ACItglMax _IQ26(16)
+#define ACItglMin _IQ26(-16)
+#define ACOutMax _IQ26(16)
+#define ACOutMin _IQ26(-16)
+#define DCKp     _IQ28(2.5)
+#define DCKi     _IQ29(0.5)
+#define DCItglMax _IQ26(16)
+#define DCItglMin _IQ26(-16)
+#define DCOutMax _IQ26(16)
+#define DCOutMin _IQ26(-16)
 
-#define a1_2nd _IQ27(1.0)
-#define a2_2nd _IQ27(1.0)
-#define a3_2nd _IQ27(1.0)
-#define b1_2nd _IQ27(1.0)
-#define b2_2nd _IQ27(1.0)
-#define b3_2nd _IQ27(1.0)
+static _iq26 ACcurrent_log[3] = {0,0,0}; // -2^5 ~ 2^5-2^-26
+static _iq22 DCvoltage_log[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
 
-#define a1_3rd _IQ27(1.0)
-#define a2_3rd _IQ27(1.0)
-#define a3_3rd _IQ27(1.0)
-#define b1_3rd _IQ27(1.0)
-#define b2_3rd _IQ27(1.0)
-#define b3_3rd _IQ27(1.0)
 
-static _iq26 ACcurrent[3] = {0,0,0}; // -2^5 ~ 2^5-2^-26
-static _iq22 DCvoltage[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
+static _iq22 SetVol;                        // Defined in SCI ISR.
+static _iq26 DCvoltageError_log[3] = {0,0,0};
+static _iq26 DCvoltageError_1st[3] = {0,0,0}; // After Notch filter
+static _iq26 DCvoltageError_2nd[3] = {0,0,0}; // After Low-pass filter
+PICtrlr DCvoltagePICtrlr={0,0,DCItglMax,DCItglMin,DCKp,DCKi,0,DCOutMax,DCOutMin};
 
-_iq22 SetVol;                          // Defined in SCI ISR.
-_iq25 DCvoltageError_1st[3] = {0,0,0}; // Notch filter
-_iq25 DCvoltageError_2nd[3] = {0,0,0}; // Low-pass filter, PI
+static _iq30 ACPhase       = 0x00000000;
+static _iq30 SetPhaseDelay = 0x00000000;
+static _iq30 DesiredPhase  = 0x00000000;
+static _iq26 ACcurrentRef  = 0x00000000;
+static _iq26 ACcurrentError_log[3] = {0,0,0};
+PICtrlr ACcurrentPICtrlr={0,0,ACItglMax,ACItglMin,ACKp,ACKi,0,ACOutMax,ACOutMin};
 
-_iq30 ACPhase       = 0x00000000;
-_iq30 SetPhaseDelay = 0x00000000;
-_iq30 DesiredPhase  = 0x00000000;
-
-_iq26 ACcurrentRef          = 0x00000000;
-_iq29 ACcurrentError_1st[3] = {0,0,0};
+static unsigned char Danger = 0x00;
 
 void ControlledRect();
 void UncontrolledRect();
-int16 Filters(void);
 
 void Processing(int16 newACcurrent, int16 newDCvoltage)
 {
     int16 cmpr;
+    _iq26 DCtemp;
+    _iq26 ACtemp;
 
     ACPhase += DeltaPhase;
+    DesiredPhase = ACPhase + SetPhaseDelay;
 
-    ACcurrent[2] = ACcurrent[1];
-    ACcurrent[1] = ACcurrent[0];
-    ACcurrent[0] = _IQ26mpyIQX(ACGain, 30, (long)newACcurrent, 0) + ACOffset;
+    if (Danger)
+        return;
 
-    DCvoltage[2] = DCvoltage[1];
-    DCvoltage[1] = DCvoltage[0];
-    DCvoltage[0] = _IQ22mpyIQX(DCGain, 30, (long)newDCvoltage, 0) + DCOffset;
+    DCvoltage_log[2] = DCvoltage_log[1];
+    DCvoltage_log[1] = DCvoltage_log[0];
+    DCvoltage_log[0] = _IQ22mpyIQX(DCGain, 30, (long)newDCvoltage, 0) + DCOffset;
 
-    if (DCvoltage[0]<_IQ22(160))
+    // if (DCvoltage[0]<_IQ22(160))
+    // {
+       // UncontrolledRect();
+       // return;
+    // }
+
+    DCtemp = SetVol-newDCvoltage;
+    DCvoltageError_log[2]=DCvoltageError_log[1];
+    DCvoltageError_log[1]=DCvoltageError_log[0];
+    DCvoltageError_log[0]=DCtemp;
+
+    // DCtemp =
+       // -_IQ26mpyIQX(a2_1st, 27, DCvoltageError_1st[1], 26)
+       // -_IQ26mpyIQX(a3_1st, 27, DCvoltageError_1st[2], 26)
+       // +_IQ26mpyIQX(b1_1st, 27, DCvoltageError_log[0], 26)
+       // +_IQ26mpyIQX(b2_1st, 27, DCvoltageError_log[1], 26)
+       // +_IQ26mpyIQX(b3_1st, 27, DCvoltageError_log[2], 26);
+    // DCvoltageError_1st[2] = DCvoltageError_1st[1];
+    // DCvoltageError_1st[1] = DCvoltageError_1st[0];
+    // DCvoltageError_1st[0] = DCtemp;
+
+    // DCtemp =
+       // -_IQ26mpyIQX(a2_2nd, 27, DCvoltageError_2nd[1], 26)
+       // -_IQ26mpyIQX(a3_2nd, 27, DCvoltageError_2nd[2], 26)
+       // +_IQ26mpyIQX(b1_2nd, 27, DCvoltageError_1st[0], 26)
+       // +_IQ26mpyIQX(b2_2nd, 27, DCvoltageError_1st[1], 26)
+       // +_IQ26mpyIQX(b3_2nd, 27, DCvoltageError_1st[2], 26);
+    // DCvoltageError_2nd[2] = DCvoltageError_2nd[1];
+    // DCvoltageError_2nd[1] = DCvoltageError_2nd[0];
+    // DCvoltageError_2nd[0] = DCtemp;
+    DCtemp = PI_calc(&DCvoltagePICtrlr, DCtemp);
+    // DCtemp is the ACcurrent amplitude reference
+
+    // ACcurrentRef = _IQ26mpyIQX(DCtemp, 26, _IQ30sinPU(DesiredPhase), 30);
+    ACcurrentRef = _IQ26mpyIQX(_IQ26(0.5), 26, _IQ30sinPU(DesiredPhase), 30);
+
+    ACcurrent_log[2] = ACcurrent_log[1];
+    ACcurrent_log[1] = ACcurrent_log[0];
+    ACcurrent_log[0] = _IQ26mpyIQX(ACGain, 30, (long)newACcurrent, 0) + ACOffset;
+
+    if ((ACcurrent_log[0]>_IQ26(0.7))||(ACcurrent_log[0]<_IQ26(-0.7)))
     {
+        Danger = 0xFF;
         UncontrolledRect();
         return;
     }
 
-    cmpr = Filters();
+    ACtemp = ACcurrentRef-ACcurrent_log[0];
+    ACcurrentError_log[2]=ACcurrentError_log[1];
+    ACcurrentError_log[1]=ACcurrentError_log[0];
+    ACcurrentError_log[0]=ACtemp;
 
+    ACtemp = PI_calc(&ACcurrentPICtrlr, ACtemp);
+    cmpr = _IQ15mpyIQX((ACtemp+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
     EvaRegs.CMPR1 = cmpr;
     EvaRegs.CMPR2 = cmpr;
     ControlledRect();
-}
-
-int16 Filters(void)
-{
-    _iq25 DCtemp;
-    _iq29 ACtemp;
-
-    DCtemp =
-        -_IQ25mpyIQX(a2_1st, 27, DCvoltageError_1st[1], 25)
-        -_IQ25mpyIQX(a3_1st, 27, DCvoltageError_1st[2], 25)
-        +_IQ25mpyIQX(b1_1st, 27, (DCvoltage[0]-SetVol), 22)
-        +_IQ25mpyIQX(b2_1st, 27, (DCvoltage[1]-SetVol), 22)
-        +_IQ25mpyIQX(b3_1st, 27, (DCvoltage[2]-SetVol), 22);
-    DCvoltageError_1st[2] = DCvoltageError_1st[1];
-    DCvoltageError_1st[1] = DCvoltageError_1st[0];
-    DCvoltageError_1st[0] = DCtemp;
-
-    DCtemp =
-        -_IQ25mpyIQX(a2_2nd, 27, DCvoltageError_2nd[1], 25)
-        -_IQ25mpyIQX(a3_2nd, 27, DCvoltageError_2nd[2], 25)
-        +_IQ25mpyIQX(b1_2nd, 27, DCvoltageError_1st[0], 25)
-        +_IQ25mpyIQX(b2_2nd, 27, DCvoltageError_1st[1], 25)
-        +_IQ25mpyIQX(b3_2nd, 27, DCvoltageError_1st[2], 25);
-    DCvoltageError_2nd[2] = DCvoltageError_2nd[1];
-    DCvoltageError_2nd[1] = DCvoltageError_2nd[0];
-    DCvoltageError_2nd[0] = DCtemp;
-    // DCvoltage_2nd and DCtemp is the ACcurrent amplitude reference
-
-    DesiredPhase = ACPhase + SetPhaseDelay;
-    ACcurrentRef = _IQ26mpyIQX(DCtemp, 25, _IQ30sin(DesiredPhase), 30);
-
-    ACtemp =
-        -_IQ29mpyIQX(a2_3rd, 27, ACcurrentError_1st[1]      , 29)
-        -_IQ29mpyIQX(a3_3rd, 27, ACcurrentError_1st[2]      , 29)
-        +_IQ29mpyIQX(b1_3rd, 27, (ACcurrent[0]-ACcurrentRef), 26)
-        +_IQ29mpyIQX(b2_3rd, 27, (ACcurrent[1]-ACcurrentRef), 26)
-        +_IQ29mpyIQX(b3_3rd, 27, (ACcurrent[2]-ACcurrentRef), 26);
-    ACcurrentError_1st[2] = ACcurrentError_1st[1];
-    ACcurrentError_1st[1] = ACcurrentError_1st[0];
-    ACcurrentError_1st[0] = ACtemp;
-    // Assumption: ACtemp varies from -1 to 1.
-
-    return _IQ15mpyIQX((ACtemp+_IQ29(1.0)), 29, _IQ18(3750), 18)>>15;
 }
 
 void SetPhaseZero(void)
@@ -158,4 +159,26 @@ void UncontrolledRect()
     GpioMuxRegs.GPADIR.all    = 0x003F;
     GpioDataRegs.GPACLEAR.all = 0x001F;
     EDIS;
+}
+
+void PI_reset(PICtrlr *v)
+{
+    v->Err_Itgl = 0x00000000;
+}
+
+_iq26 PI_calc(PICtrlr *v, _iq26 Errset)
+{
+    v->Err = Errset;
+    v->Err_Itgl += _IQ26mpyIQX(Errset, 26, SampPeri, 30);
+    if (v->Err_Itgl > v->ItglMax)
+      v->Err_Itgl =  v->ItglMax;
+    else if (v->Err_Itgl < v->ItglMin)
+      v->Err_Itgl =  v->ItglMin;
+
+    v->Out = _IQ26mpyIQX(v->Ki, 28, v->Err_Itgl, 26) + _IQ26mpyIQX(v->Kp, 28, v->Err, 26);
+    if (v->Out > v->OutMax)
+      v->Out = v->OutMax;
+    else if (v->Out < v->OutMin)
+      v->Out = v->OutMin;
+    return v->Out;
 }
