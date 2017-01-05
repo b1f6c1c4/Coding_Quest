@@ -51,7 +51,7 @@ void InitSysCtrl(void)
    DisableDog();
 
    // Initialize the PLLCR to 0xA
-   InitPll(0xA);
+   InitPll(0xA); //CPU works at 150MHz
 
    // Initialize the peripheral clocks
    InitPeripheralClocks();

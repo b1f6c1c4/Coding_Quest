@@ -50,7 +50,7 @@ void InitAdc(void)
     AdcRegs.ADCTRL2.bit.EVB_SOC_SEQ2 = 0; // SEQ2 cannot be started by EVB trigger.
 
     AdcRegs.ADCTRL3.bit.ADCEXTREF = 0;   // ADCREFP(2V) and ADCREFM(1V) pins are outputs for internal reference sources.
-    AdcRegs.ADCTRL3.bit.ADCCLKPS  = 0xF; // Core clock divider: 5MHz
+    AdcRegs.ADCTRL3.bit.ADCCLKPS  = 0xF; // Core clock divider: 30. ADCCLK works at 5MHz.
     AdcRegs.ADCTRL3.bit.SMODE_SEL = 0;   // Sequential sampling mode is selected.
     AdcRegs.ADCMAXCONV.all        = 0x0F;
 
