@@ -9,25 +9,6 @@
 #include "DSP281x_Examples.h"
 #include "CtrlUnit.h"
 
-#define ACGain _IQ30(0.0002275)   // Number in the parenthesis take A/ACcurrent as units
-#define ACOffset _IQ26(-3.4613) // Number in the parenthesis take Ampere as units
-#define DCGain _IQ30(0.015625)      // Number in the parenthesis take V/DCvoltage as units
-#define DCOffset _IQ22(0.0) // Number in the parenthesis take Voltage as units
-
-#define SampPeri _IQ30(0.0001)
-#define ACKp     _IQ28(2.5)
-#define ACKi     _IQ29(0.5)
-#define ACItglMax _IQ26(16)
-#define ACItglMin _IQ26(-16)
-#define ACOutMax _IQ26(16)
-#define ACOutMin _IQ26(-16)
-#define DCKp     _IQ28(2.5)
-#define DCKi     _IQ29(0.5)
-#define DCItglMax _IQ26(16)
-#define DCItglMin _IQ26(-16)
-#define DCOutMax _IQ26(16)
-#define DCOutMin _IQ26(-16)
-
 static _iq26 ACcurrent_log[3] = {0,0,0}; // -2^5 ~ 2^5-2^-26
 static _iq22 DCvoltage_log[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
 
@@ -35,7 +16,7 @@ static _iq22 DCvoltage_log[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
 static _iq22 SetVol;                        // Defined in SCI ISR.
 static _iq26 DCvoltageError_log[3] = {0,0,0};
 static _iq26 DCvoltageError_1st[3] = {0,0,0}; // After Notch filter
-static _iq26 DCvoltageError_2nd[3] = {0,0,0}; // After Low-pass filter
+static _iq26 DCvoltageError_2nd[2] = {0,0}; // After Low-pass filter
 PICtrlr DCvoltagePICtrlr={0,0,DCItglMax,DCItglMin,DCKp,DCKi,0,DCOutMax,DCOutMin};
 
 static _iq30 ACPhase       = 0x00000000;
@@ -78,25 +59,22 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     DCvoltageError_log[0]=DCtemp;
 
     // DCtemp =
-       // -_IQ26mpyIQX(a2_1st, 27, DCvoltageError_1st[1], 26)
-       // -_IQ26mpyIQX(a3_1st, 27, DCvoltageError_1st[2], 26)
-       // +_IQ26mpyIQX(b1_1st, 27, DCvoltageError_log[0], 26)
-       // +_IQ26mpyIQX(b2_1st, 27, DCvoltageError_log[1], 26)
-       // +_IQ26mpyIQX(b3_1st, 27, DCvoltageError_log[2], 26);
+       // -_IQ26mpyIQX(_IQ30(-1.519242529784681), 30, DCvoltageError_1st[1], 26)
+       // -_IQ26mpyIQX(_IQ30(0.522244357021068), 30, DCvoltageError_1st[2], 26)
+       // +_IQ26mpyIQX(_IQ30(0.761122178510534), 30, DCvoltageError_log[0], 26)
+       // +_IQ26mpyIQX(_IQ30(-1.519242529784681), 30, DCvoltageError_log[1], 26)
+       // +_IQ26mpyIQX(_IQ30(0.761122178510534), 30, DCvoltageError_log[2], 26);
     // DCvoltageError_1st[2] = DCvoltageError_1st[1];
     // DCvoltageError_1st[1] = DCvoltageError_1st[0];
     // DCvoltageError_1st[0] = DCtemp;
 
     // DCtemp =
-       // -_IQ26mpyIQX(a2_2nd, 27, DCvoltageError_2nd[1], 26)
-       // -_IQ26mpyIQX(a3_2nd, 27, DCvoltageError_2nd[2], 26)
-       // +_IQ26mpyIQX(b1_2nd, 27, DCvoltageError_1st[0], 26)
-       // +_IQ26mpyIQX(b2_2nd, 27, DCvoltageError_1st[1], 26)
-       // +_IQ26mpyIQX(b3_2nd, 27, DCvoltageError_1st[2], 26);
-    // DCvoltageError_2nd[2] = DCvoltageError_2nd[1];
+       // -_IQ26mpyIQX(_IQ30(-0.990049751243781), 30, DCvoltageError_2nd[1], 26)
+       // +_IQ26mpyIQX(_IQ30(0.004975124378109), 30, DCvoltageError_1st[0], 26)
+       // +_IQ26mpyIQX(_IQ30(0.004975124378110), 30, DCvoltageError_1st[1], 26);
     // DCvoltageError_2nd[1] = DCvoltageError_2nd[0];
     // DCvoltageError_2nd[0] = DCtemp;
-    DCtemp = PI_calc(&DCvoltagePICtrlr, DCtemp);
+    // DCtemp = PI_calc(&DCvoltagePICtrlr, DCtemp);
     // DCtemp is the ACcurrent amplitude reference
 
     // ACcurrentRef = _IQ26mpyIQX(DCtemp, 26, _IQ30sinPU(DesiredPhase), 30);
