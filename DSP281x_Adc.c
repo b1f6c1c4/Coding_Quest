@@ -6,8 +6,8 @@
 extern void DSP28x_usDelay(Uint32 Count);
 
 #define DC_VOLT 0x5
-#define AC_CURR 0x2
-
+#define AC_CURR 0x0
+//0x2,0x4 won't work
 // This function initializes ADC to a known state.
 void InitAdc(void)
 {

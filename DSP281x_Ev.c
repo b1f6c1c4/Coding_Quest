@@ -73,7 +73,7 @@ interrupt void CAPINT1_ISR(void)    // EV-A
 }
 interrupt void CAPINT2_ISR(void)    // EV-A
 {
-    SetPhaseZero();
+    SetPhasePI();
     EvaRegs.EVAIFRC.bit.CAP2INT=1;
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
     EALLOW;

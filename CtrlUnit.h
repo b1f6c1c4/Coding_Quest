@@ -9,7 +9,7 @@
 #define CTRLUNIT_H_
 #define DeltaPhase 5368709   // 100us / 20ms * 2^30
 #define ACGain _IQ30(0.0002275)   // Number in the parenthesis take A/ACcurrent as unit
-#define ACOffset _IQ26(-3.4613) // Number in the parenthesis take Ampere as unit
+#define ACOffset _IQ26(-3.62647) // Number in the parenthesis take Ampere as unit
 #define DCGain _IQ30(0.015625)      // Number in the parenthesis take V/DCvoltage as unit
 #define DCOffset _IQ22(0.0) // Number in the parenthesis take Voltage as unit
 #define SampPeri _IQ30(0.0001) // Number in the parenthesis take second as unit)
@@ -29,10 +29,10 @@ typedef struct
 
 #define ACKp     _IQ28(2.5)
 #define ACKi     _IQ29(0.5)
-#define ACItglMax _IQ26(16)
-#define ACItglMin _IQ26(-16)
-#define ACOutMax _IQ26(1)
-#define ACOutMin _IQ26(-1)
+#define ACItglMax _IQ26(8)
+#define ACItglMin _IQ26(-8)
+#define ACOutMax _IQ26(0.9990234375)
+#define ACOutMin _IQ26(-0.9990234375)
 #define DCKp     _IQ28(2.5)
 #define DCKi     _IQ29(0.5)
 #define DCItglMax _IQ26(16)

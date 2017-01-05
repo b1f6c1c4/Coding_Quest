@@ -40,8 +40,8 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     ACPhase += DeltaPhase;
     DesiredPhase = ACPhase + SetPhaseDelay;
 
-    if (Danger)
-        return;
+//    if (Danger)
+//        return;
 
     DCvoltage_log[2] = DCvoltage_log[1];
     DCvoltage_log[1] = DCvoltage_log[0];
@@ -78,18 +78,18 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     // DCtemp is the ACcurrent amplitude reference
 
     // ACcurrentRef = _IQ26mpyIQX(DCtemp, 26, _IQ30sinPU(DesiredPhase), 30);
-    ACcurrentRef = _IQ26mpyIQX(_IQ26(0.5), 26, _IQ30sinPU(DesiredPhase), 30);
+    ACcurrentRef = _IQ26mpyIQX(_IQ26(0.8), 26, _IQ30sinPU(DesiredPhase), 30);
 
     ACcurrent_log[2] = ACcurrent_log[1];
     ACcurrent_log[1] = ACcurrent_log[0];
     ACcurrent_log[0] = _IQ26mpyIQX(ACGain, 30, (long)newACcurrent, 0) + ACOffset;
 
-    if ((ACcurrent_log[0]>_IQ26(0.7))||(ACcurrent_log[0]<_IQ26(-0.7)))
-    {
-        Danger = 0xFF;
-        UncontrolledRect();
-        return;
-    }
+//    if ((ACcurrent_log[0]>_IQ26(0.7))||(ACcurrent_log[0]<_IQ26(-0.7)))
+//    {
+//        Danger = 0xFF;
+//        UncontrolledRect();
+//        return;
+//    }
 
     ACtemp = ACcurrentRef-ACcurrent_log[0];
     ACcurrentError_log[2]=ACcurrentError_log[1];
@@ -97,7 +97,8 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     ACcurrentError_log[0]=ACtemp;
 
     ACtemp = PI_calc(&ACcurrentPICtrlr, ACtemp);
-    cmpr = _IQ15mpyIQX((ACtemp+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
+//    cmpr = _IQ15mpyIQX((ACtemp+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
+    cmpr = _IQ15mpyIQX((ACcurrentRef+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
     EvaRegs.CMPR1 = cmpr;
     EvaRegs.CMPR2 = cmpr;
     ControlledRect();
@@ -105,12 +106,12 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
 
 void SetPhaseZero(void)
 {
-    ACPhase = 0x00000000; // 0 in _iq30
+    ACPhase = _IQ30(0); // 0 in _iq30
 }
 
 void SetPhasePI(void)
 {
-    ACPhase = 0x40000000; // 1 in _iq30
+    ACPhase = _IQ30(0.5); // 0.5 in _iq30
 }
 
 void SetVol_DPhi(Uint8 Vol, int8 DPhi)
