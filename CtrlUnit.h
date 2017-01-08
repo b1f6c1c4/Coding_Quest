@@ -39,10 +39,12 @@ typedef struct
 #define DCItglMin _IQ26(-16)
 #define DCOutMax _IQ26(16)
 #define DCOutMin _IQ26(-16)
+#define PhCom    _IQ30(3.0/360.0) //Phase Compensation
 
 void PI_reset(PICtrlr *v);
 _iq26 PI_calc(PICtrlr *v, _iq26 Errset);
 
+extern Uint64  g_SysCount;
 void Processing(int16 newACcurrent, int16 newDCvoltage);
 
 void SetPhaseZero(void);

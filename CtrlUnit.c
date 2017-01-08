@@ -9,6 +9,7 @@
 #include "DSP281x_Examples.h"
 #include "CtrlUnit.h"
 
+Uint64 g_SysCount = 0;
 static _iq26 ACcurrent_log[3] = {0,0,0}; // -2^5 ~ 2^5-2^-26
 static _iq22 DCvoltage_log[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
 
@@ -30,13 +31,13 @@ static unsigned char Danger = 0x00;
 
 void ControlledRect();
 void UncontrolledRect();
-
 void Processing(int16 newACcurrent, int16 newDCvoltage)
 {
     int16 cmpr;
     _iq26 DCtemp;
     _iq26 ACtemp;
 
+    g_SysCount++;
     ACPhase += DeltaPhase;
     DesiredPhase = ACPhase + SetPhaseDelay;
 
@@ -106,12 +107,12 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
 
 void SetPhaseZero(void)
 {
-    ACPhase = _IQ30(0); // 0 in _iq30
+    ACPhase = _IQ30(0)+PhCom; // 0 in _iq30
 }
 
 void SetPhasePI(void)
 {
-    ACPhase = _IQ30(0.5); // 0.5 in _iq30
+    ACPhase = _IQ30(0.5)+PhCom; // 0.5 in _iq30
 }
 
 void SetVol_DPhi(Uint8 Vol, int8 DPhi)
