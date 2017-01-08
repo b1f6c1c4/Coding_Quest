@@ -85,12 +85,12 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     ACcurrent_log[1] = ACcurrent_log[0];
     ACcurrent_log[0] = _IQ26mpyIQX(ACGain, 30, (long)newACcurrent, 0) + ACOffset;
 
-//    if ((ACcurrent_log[0]>_IQ26(0.7))||(ACcurrent_log[0]<_IQ26(-0.7)))
-//    {
+    if ((ACcurrent_log[0]>_IQ26(0.7))||(ACcurrent_log[0]<_IQ26(-0.7)))
+    {
 //        Danger = 0xFF;
 //        UncontrolledRect();
 //        return;
-//    }
+    }
 
     ACtemp = ACcurrentRef-ACcurrent_log[0];
     ACcurrentError_log[2]=ACcurrentError_log[1];
@@ -98,8 +98,7 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     ACcurrentError_log[0]=ACtemp;
 
     ACtemp = PI_calc(&ACcurrentPICtrlr, ACtemp);
-//    cmpr = _IQ15mpyIQX((ACtemp+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
-    cmpr = _IQ15mpyIQX((ACcurrentRef+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
+    cmpr = _IQ15mpyIQX((ACtemp+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
     EvaRegs.CMPR1 = cmpr;
     EvaRegs.CMPR2 = cmpr;
     ControlledRect();

@@ -29,14 +29,14 @@ typedef struct
 
 #define ACKp     _IQ28(2.5)
 #define ACKi     _IQ29(0.5)
-#define ACItglMax _IQ26(8)
-#define ACItglMin _IQ26(-8)
+#define ACItglMax _IQ26(4)
+#define ACItglMin _IQ26(-4)
 #define ACOutMax _IQ26(0.9990234375)
 #define ACOutMin _IQ26(-0.9990234375)
 #define DCKp     _IQ28(2.5)
 #define DCKi     _IQ29(0.5)
-#define DCItglMax _IQ26(16)
-#define DCItglMin _IQ26(-16)
+#define DCItglMax _IQ26(4)
+#define DCItglMin _IQ26(-4)
 #define DCOutMax _IQ26(16)
 #define DCOutMin _IQ26(-16)
 #define PhCom    _IQ30(3.0/360.0) //Phase Compensation
