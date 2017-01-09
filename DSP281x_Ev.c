@@ -22,7 +22,7 @@ void InitEv(void)
     EvaRegs.T1CON.bit.TENABLE = 1; // Timer enable
     EvaRegs.T1CON.bit.TCLD10  = 1; // Timer compare register reload condition
     // When counter value is 0 or equals period register value
-    EvaRegs.T1CON.bit.TECMPR  = 1; // Enable timer compare operation
+    EvaRegs.T1CON.bit.TECMPR  = 0; // Disable timer compare operation
 
     EvaRegs.COMCONA.bit.CENABLE  = 1; // Compare enable
     EvaRegs.COMCONA.bit.CLD      = 1; // Compare register CMPRx reload condition:
@@ -36,6 +36,7 @@ void InitEv(void)
     EvaRegs.DBTCONA.bit.DBT   = 15; //Dead-band timer period
     EvaRegs.DBTCONA.bit.EDBT1 = 1;
     EvaRegs.DBTCONA.bit.EDBT2 = 1;
+    EvaRegs.DBTCONA.bit.EDBT3 = 0;
     EvaRegs.DBTCONA.bit.DBTPS = 7; // Dead-band timer prescaler
 
     EvaRegs.CMPR1 = 3000;
@@ -91,4 +92,3 @@ interrupt void CAPINT2_ISR(void)    // EV-B
         EDIS;
     }
 }
-

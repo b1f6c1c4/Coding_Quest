@@ -9,8 +9,29 @@
 #include "DSP281x_Examples.h"
 #include "CtrlUnit.h"
 
+const FilterCoeff AC1 = 
+{
+    _IQ30(0),
+    _IQ30(-1),
+    _IQ30(-1.991208300207381),
+    _IQ30(0.99125145496597722),
+    _IQ30(0.057291205723457118)
+};
+const FilterCoeff AC2 = 
+{
+    _IQ30(0),
+    _IQ30(-1),
+    _IQ30(-1.838801833563001),
+    _IQ30(0.85210829515935227),
+    _IQ30(0.057291205723457118)
+};
+SecOrdFilter AC1s={0,0},AC2s={0,0};
+_iq20 SecOrdFil(const FilterCoeff* fc, SecOrdFilter* sof, _iq20 input);
+
+void PI_reset(PICtrlr *v);
+_iq26 PI_calc(PICtrlr *v, _iq20 Errset);
+
 Uint64 g_SysCount = 0;
-static _iq26 ACcurrent_log[3] = {0,0,0}; // -2^5 ~ 2^5-2^-26
 static _iq22 DCvoltage_log[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
 
 
@@ -18,14 +39,17 @@ static _iq22 SetVol;                        // Defined in SCI ISR.
 static _iq26 DCvoltageError_log[3] = {0,0,0};
 static _iq26 DCvoltageError_1st[3] = {0,0,0}; // After Notch filter
 static _iq26 DCvoltageError_2nd[2] = {0,0}; // After Low-pass filter
-PICtrlr DCvoltagePICtrlr={0,0,DCItglMax,DCItglMin,DCKp,DCKi,0,DCOutMax,DCOutMin};
+
+
+PICtrlr DCvoltagePICtrlr={0,DCItglMax,DCItglMin,DCKp,DCKi,0,DCOutMax,DCOutMin};
 
 static _iq30 ACPhase       = 0x00000000;
 static _iq30 SetPhaseDelay = 0x00000000;
-static _iq30 DesiredPhase  = 0x00000000;
-static _iq26 ACcurrentRef  = 0x00000000;
+static _iq30 DesiredPhase  = _IQ30(0.01);
+static _iq20 ACcurrentRef  = 0x00000000;
 static _iq26 ACcurrentError_log[3] = {0,0,0};
-PICtrlr ACcurrentPICtrlr={0,0,ACItglMax,ACItglMin,ACKp,ACKi,0,ACOutMax,ACOutMin};
+
+PICtrlr ACcurrentPICtrlr={0,ACItglMax,ACItglMin,ACKp,ACKi,0,ACOutMax,ACOutMin};
 
 static unsigned char Danger = 0x00;
 
@@ -35,14 +59,15 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
 {
     int16 cmpr;
     _iq26 DCtemp;
-    _iq26 ACtemp;
+    _iq20 ACtemp;
+    _iq26 ACctrl;
 
     g_SysCount++;
     ACPhase += DeltaPhase;
     DesiredPhase = ACPhase + SetPhaseDelay;
 
-//    if (Danger)
-//        return;
+    // if (Danger)
+       // return;
 
     DCvoltage_log[2] = DCvoltage_log[1];
     DCvoltage_log[1] = DCvoltage_log[0];
@@ -79,26 +104,32 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     // DCtemp is the ACcurrent amplitude reference
 
     // ACcurrentRef = _IQ26mpyIQX(DCtemp, 26, _IQ30sinPU(DesiredPhase), 30);
-    ACcurrentRef = _IQ26mpyIQX(_IQ26(0.8), 26, _IQ30sinPU(DesiredPhase), 30);
+    ACcurrentRef = _IQ20mpyIQX(_IQ26(1), 26, _IQ30sinPU(DesiredPhase), 30);
+    // Generate current reference.
+//    cmpr = _IQ15mpyIQX((ACcurrentRef+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
+//    EvaRegs.CMPR3 = cmpr;
+//    // Display current reference through PWM5.
 
-    ACcurrent_log[2] = ACcurrent_log[1];
-    ACcurrent_log[1] = ACcurrent_log[0];
-    ACcurrent_log[0] = _IQ26mpyIQX(ACGain, 30, (long)newACcurrent, 0) + ACOffset;
-
-    if ((ACcurrent_log[0]>_IQ26(0.7))||(ACcurrent_log[0]<_IQ26(-0.7)))
+    ACtemp = _IQ20mpyIQX(ACGain, 30, (long)newACcurrent, 0) + ACOffset;
+    ACtemp = SecOrdFil(&AC1, &AC1s, ACtemp);
+    ACtemp = SecOrdFil(&AC2, &AC2s, ACtemp);
+    cmpr = _IQ15mpyIQX((ACcurrentRef+_IQ20(1.0)), 20, _IQ18(3750), 18)>>15;
+    EvaRegs.CMPR3 = cmpr;
+    // Display current observation through PWM5.
+    if ((ACtemp>_IQ20(0.7))||(ACtemp<_IQ20(-0.7)))
     {
-//        Danger = 0xFF;
-//        UncontrolledRect();
-//        return;
+       // Danger = 0xFF;
+       // UncontrolledRect();
+       // return;
     }
 
-    ACtemp = ACcurrentRef-ACcurrent_log[0];
+    ACtemp = ACcurrentRef-ACtemp;
     ACcurrentError_log[2]=ACcurrentError_log[1];
     ACcurrentError_log[1]=ACcurrentError_log[0];
     ACcurrentError_log[0]=ACtemp;
-
-    ACtemp = PI_calc(&ACcurrentPICtrlr, ACtemp);
-    cmpr = _IQ15mpyIQX((ACtemp+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
+    
+    ACctrl = PI_calc(&ACcurrentPICtrlr, ACtemp);
+    cmpr = _IQ15mpyIQX((ACctrl+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
     EvaRegs.CMPR1 = cmpr;
     EvaRegs.CMPR2 = cmpr;
     ControlledRect();
@@ -125,18 +156,18 @@ void SetVol_DPhi(Uint8 Vol, int8 DPhi)
 void ControlledRect()
 {
     EALLOW;
-    GpioMuxRegs.GPAMUX.all  = 0x034F;
-    GpioMuxRegs.GPADIR.all  = 0x003F;
-    GpioDataRegs.GPASET.all = 0x0010; // Disable the current-limiting resistor
+    GpioMuxRegs.GPAMUX.all  = 0x031F;
+    GpioMuxRegs.GPADIR.all  = 0x006F;
+    GpioDataRegs.GPASET.all = 0x0040; // Disable the current-limiting resistor
     EDIS;
 }
 
 void UncontrolledRect()
 {
     EALLOW;
-    GpioMuxRegs.GPAMUX.all    = 0x0340;
-    GpioMuxRegs.GPADIR.all    = 0x003F;
-    GpioDataRegs.GPACLEAR.all = 0x001F;
+    GpioMuxRegs.GPAMUX.all    = 0x0310;
+    GpioMuxRegs.GPADIR.all    = 0x006F;
+    GpioDataRegs.GPACLEAR.all = 0x004F;
     EDIS;
 }
 
@@ -145,19 +176,32 @@ void PI_reset(PICtrlr *v)
     v->Err_Itgl = 0x00000000;
 }
 
-_iq26 PI_calc(PICtrlr *v, _iq26 Errset)
+_iq26 PI_calc(PICtrlr *v, _iq20 Errset)
 {
-    v->Err = Errset;
-    v->Err_Itgl += _IQ26mpyIQX(Errset, 26, SampPeri, 30);
+    v->Err_Itgl += _IQ26mpyIQX(Errset, 20, SampPeri, 30);
     if (v->Err_Itgl > v->ItglMax)
       v->Err_Itgl =  v->ItglMax;
     else if (v->Err_Itgl < v->ItglMin)
       v->Err_Itgl =  v->ItglMin;
 
-    v->Out = _IQ26mpyIQX(v->Ki, 28, v->Err_Itgl, 26) + _IQ26mpyIQX(v->Kp, 28, v->Err, 26);
+    v->Out = _IQ26mpyIQX(v->Ki, 28, v->Err_Itgl, 26) + _IQ26mpyIQX(v->Kp, 28, Errset, 20);
     if (v->Out > v->OutMax)
       v->Out = v->OutMax;
     else if (v->Out < v->OutMin)
       v->Out = v->OutMin;
     return v->Out;
+}
+
+_iq20 SecOrdFil(const FilterCoeff* fc, SecOrdFilter* sof, _iq20 input)
+{
+    _iq20 temp1,temp2;
+    temp1 = _IQ20mpyIQX(fc->Gain, 30, input, 20);
+    temp1 -= _IQ20mpyIQX(fc->Denom[0],30,sof->Node1,20);
+    temp1 -= _IQ20mpyIQX(fc->Denom[1],30,sof->Node2,20);
+    temp2 = temp1;
+    temp2 += _IQ20mpyIQX(fc->Numer[0],30,sof->Node1,20);
+    temp2 += _IQ20mpyIQX(fc->Numer[1],30,sof->Node2,20);
+    sof->Node2 = sof->Node1;
+    sof->Node1 = temp1;
+    return temp2;
 }
