@@ -76,4 +76,58 @@ interrupt void SCIRXINTA_ISR(void)    // SCI-A
     {
         AdjSetVol(0);
     }
+    else if (temp == '3')
+    {
+        AdjACRef(1);
+        EALLOW;
+        GpioDataRegs.GPATOGGLE.all=0x0040;
+        EDIS;
+    }
+    else if (temp == '1')
+    {
+        AdjACRef(-1);
+        EALLOW;
+        GpioDataRegs.GPATOGGLE.all=0x0040;
+        EDIS;
+    }
+    else if (temp == '2')
+    {
+        AdjACRef(0);
+    }
+    else if (temp == 'e')
+    {
+        AdjACKp(1);
+    }
+    else if (temp == 'q')
+    {
+        AdjACKp(-1);
+    }
+    else if (temp == 'w')
+    {
+        AdjACKp(0);
+    }
+    else if (temp == 'd')
+    {
+        AdjACKi(1);
+    }
+    else if (temp == 'a')
+    {
+        AdjACKi(-1);
+    }
+    else if (temp == 's')
+    {
+        AdjACKi(0);
+    }
+    else if (temp == '9')
+    {
+        AdjACOffset(1);
+    }
+    else if (temp == '7')
+    {
+        AdjACOffset(-1);
+    }
+    else if (temp == '8')
+    {
+        AdjACOffset(0);
+    }
 }
