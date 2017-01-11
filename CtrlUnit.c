@@ -9,7 +9,7 @@
 #include "DSP281x_Examples.h"
 #include "CtrlUnit.h"
 
-const FilterCoeff AC1 = 
+const FilterCoeff AC1 =
 {
     _IQ30(0),
     _IQ30(-1),
@@ -17,7 +17,7 @@ const FilterCoeff AC1 =
     _IQ30(0.99125145496597722),
     _IQ30(0.057291205723457118)
 };
-const FilterCoeff AC2 = 
+const FilterCoeff AC2 =
 {
     _IQ30(0),
     _IQ30(-1),
@@ -35,7 +35,7 @@ Uint64 g_SysCount = 0;
 static _iq22 DCvoltage_log[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
 
 
-static _iq22 SetVol;                        // Defined in SCI ISR.
+static _iq22 SetVol = 12;                        // Defined in SCI ISR.
 static _iq26 DCvoltageError_log[3] = {0,0,0};
 static _iq26 DCvoltageError_1st[3] = {0,0,0}; // After Notch filter
 static _iq26 DCvoltageError_2nd[2] = {0,0}; // After Low-pass filter
@@ -45,13 +45,13 @@ PICtrlr DCvoltagePICtrlr={0,DCItglMax,DCItglMin,DCKp,DCKi,0,DCOutMax,DCOutMin};
 
 static _iq30 ACPhase       = 0x00000000;
 static _iq30 SetPhaseDelay = 0x00000000;
-static _iq30 DesiredPhase  = _IQ30(0.01);
+static _iq30 DesiredPhase  = _IQ30(0);
 static _iq20 ACcurrentRef  = 0x00000000;
 static _iq26 ACcurrentError_log[3] = {0,0,0};
 
 PICtrlr ACcurrentPICtrlr={0,ACItglMax,ACItglMin,ACKp,ACKi,0,ACOutMax,ACOutMin};
 
-static unsigned char Danger = 0x00;
+extern unsigned char Danger = 0x00;
 
 void ControlledRect();
 void UncontrolledRect();
@@ -65,9 +65,6 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     g_SysCount++;
     ACPhase += DeltaPhase;
     DesiredPhase = ACPhase + SetPhaseDelay;
-
-    // if (Danger)
-       // return;
 
     DCvoltage_log[2] = DCvoltage_log[1];
     DCvoltage_log[1] = DCvoltage_log[0];
@@ -127,8 +124,12 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     ACcurrentError_log[2]=ACcurrentError_log[1];
     ACcurrentError_log[1]=ACcurrentError_log[0];
     ACcurrentError_log[0]=ACtemp;
-    
+
     ACctrl = PI_calc(&ACcurrentPICtrlr, ACtemp);
+
+    if (Danger)
+        return;
+
     cmpr = _IQ15mpyIQX((ACctrl+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
     EvaRegs.CMPR1 = cmpr;
     EvaRegs.CMPR2 = cmpr;
@@ -143,14 +144,6 @@ void SetPhaseZero(void)
 void SetPhasePI(void)
 {
     ACPhase = _IQ30(0.5)+PhCom; // 0.5 in _iq30
-}
-
-void SetVol_DPhi(Uint8 Vol, int8 DPhi)
-{
-    // Assumptions: DPhi:(-2^7 ~ 2^7-1)*2^2  // _iq-2
-    SetVol = ((long)Vol)<<24;         // Turn to _iq22
-    // Assumptions: DPhi:(-2^7 ~ 2^7-1)*2^-9 // _iq9
-    SetPhaseDelay = ((long)DPhi)<<21; // Turn to _iq30
 }
 
 void ControlledRect()
@@ -169,6 +162,18 @@ void UncontrolledRect()
     GpioMuxRegs.GPADIR.all    = 0x006F;
     GpioDataRegs.GPACLEAR.all = 0x004F;
     EDIS;
+}
+
+void SetDanger(void)
+{
+    Danger=0xFF;
+    UncontrolledRect();
+    PI_reset(&ACcurrentPICtrlr);
+}
+
+void ClearDanger(void)
+{
+    Danger=0x00;
 }
 
 void PI_reset(PICtrlr *v)
@@ -204,4 +209,24 @@ _iq20 SecOrdFil(const FilterCoeff* fc, SecOrdFilter* sof, _iq20 input)
     sof->Node2 = sof->Node1;
     sof->Node1 = temp1;
     return temp2;
+}
+
+void AdjPhaseDelay(int dir)
+{
+    if(dir>0)
+        SetPhaseDelay += _IQ30(10.0/360.0);
+    else if(dir<0)
+        SetPhaseDelay -= _IQ30(10.0/360.0);
+    else
+        SetPhaseDelay = 0;
+}
+
+void AdjSetVol(int dir)
+{
+    if(dir>0)
+        SetVol += _IQ22(5.0);
+    else if(dir<0)
+        SetVol -= _IQ22(5.0);
+    else
+        SetVol = 0;
 }

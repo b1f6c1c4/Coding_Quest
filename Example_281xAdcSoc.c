@@ -54,11 +54,14 @@ main()
      */
     InitAdc();  // For this example, init the ADC
 
+    InitSci();
+
     // Step 5. User specific code, enable interrupts:
     PieCtrlRegs.PIEIER1.bit.INTx6 = 1; // Enable ADCINT in PIE
     PieCtrlRegs.PIEIER3.bit.INTx5 = 1; // Enable CAP1
     PieCtrlRegs.PIEIER3.bit.INTx6 = 1; // Enable CAP2
-    IER |= M_INT1+M_INT3;              // Enable CPU Interrupt 1
+    PieCtrlRegs.PIEIER9.bit.INTx1 = 1; //
+    IER |= M_INT1+M_INT3+M_INT9;              // Enable CPU Interrupt 1
     EINT;                              // Enable Global interrupt INTM
     ERTM;                              // Enable Global realtime interrupt DBGM
 

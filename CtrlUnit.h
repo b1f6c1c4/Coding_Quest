@@ -57,4 +57,10 @@ void Processing(int16 newACcurrent, int16 newDCvoltage);
 void SetPhaseZero(void);
 void SetPhasePI(void);
 
+void SetDanger(void);
+void ClearDanger(void);
+
+void AdjPhaseDelay(int dir);
+void AdjSetVol(int dir);
+
 #endif /* CTRLUNIT_H_ */

@@ -59,9 +59,10 @@ void EnableInterrupts()
     PieCtrlRegs.PIEACK.all = 0xFFFF;
 
     // Example Specified
-    PieCtrlRegs.PIEIER1.bit.INTx6=1;
-    //PieCtrlRegs.PIEIER9.bit.INTx1=1; //UART
+    PieCtrlRegs.PIEIER1.bit.INTx6=1; //ADC
+    PieCtrlRegs.PIEIER9.bit.INTx1=1; //UART
     IER |= M_INT1;
+    IER |= M_INT9;
 
     // Enable Interrupts at the CPU level
     EINT;

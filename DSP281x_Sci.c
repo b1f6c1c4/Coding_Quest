@@ -1,5 +1,6 @@
 #include "DSP281x_Device.h"     // DSP281x Headerfile Include File
 #include "DSP281x_Examples.h"   // DSP281x Examples Include File
+#include "CtrlUnit.h"
 
 void InitSci(void)
 {
@@ -16,11 +17,14 @@ void InitSci(void)
     SciaRegs.SCICTL1.bit.RXERRINTENA = 0; // Receive error interrupt disabled
     SciaRegs.SCICTL1.bit.SLEEP       = 0;
     SciaRegs.SCICTL1.bit.RXENA       = 1;
+
+    SciaRegs.SCICTL2.bit.RXBKINTENA  = 1; // Enable RX interrupt
     // Send received characters to SCIRXEMU and SCIRXBUF
 
     SciaRegs.SCIHBAUD = 0;
     SciaRegs.SCILBAUD = 0x79; // baud rate is 38400
 
+    SciaRegs.SCIFFTX.bit.SCIFFENA  = 0; //  Disable FIFO mode
     SciaRegs.SCIFFRX.bit.RXFFOVRCLR  = 1; //  clear RXFFOVF flag
     SciaRegs.SCIFFRX.bit.RXFIFORESET = 0; //  reset the FIFO pointer to zero, and hold in reset.
     SciaRegs.SCIFFRX.bit.RXFIFORESET = 1; // Re-enable receive FIFO operation
@@ -34,27 +38,42 @@ void InitSci(void)
     SciaRegs.SCICTL1.bit.SWRESET = 1;
 }
 
-long g_SettingVoltage    = 250;
-long g_DesiredPhaseDelay = 0;
-
 interrupt void SCIRXINTA_ISR(void)    // SCI-A
 {
-    char temp1,temp2,temp4;
-    signed char temp3;
-
-    temp1 = SciaRegs.SCIRXBUF.all;
-    temp2 = SciaRegs.SCIRXBUF.all;
-    temp3 = SciaRegs.SCIRXBUF.all;
-    temp4 = SciaRegs.SCIRXBUF.all;
-
-    if ((temp1 == 0x62) && (temp4 == 0x65))
-    {
-        g_SettingVoltage    = ((long) temp2) << 24;
-        g_DesiredPhaseDelay = ((long) temp3) << 24;
-    }
-
-    SciaRegs.SCIFFRX.bit.RXFIFORESET = 0; // Reset the FIFO pointer to zero, and hold in reset.
-    SciaRegs.SCIFFRX.bit.RXFIFORESET = 1; // Re-enable receive FIFO operation
-
+    char temp;
+    SciaRegs.SCIFFRX.bit.RXFFINTCLR = 1;    // clear Receive interrupt flag
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
+    temp = SciaRegs.SCIRXBUF.all;
+    if (temp == 'x')
+    {
+        SetDanger();
+    }
+    else if (temp == 'c')
+    {
+        ClearDanger();
+    }
+    else if (temp == '6')
+    {
+        AdjPhaseDelay(1);
+    }
+    else if (temp == '4')
+    {
+        AdjPhaseDelay(-1);
+    }
+    else if (temp == '5')
+    {
+        AdjPhaseDelay(0);
+    }
+    else if (temp == '+')
+    {
+        AdjSetVol(1);
+    }
+    else if (temp == '-')
+    {
+        AdjSetVol(-1);
+    }
+    else if (temp == '0')
+    {
+        AdjSetVol(0);
+    }
 }
