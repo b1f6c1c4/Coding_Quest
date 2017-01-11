@@ -37,7 +37,7 @@ void InitEv(void)
     EvaRegs.DBTCONA.bit.EDBT1 = 1;
     EvaRegs.DBTCONA.bit.EDBT2 = 1;
     EvaRegs.DBTCONA.bit.EDBT3 = 0;
-    EvaRegs.DBTCONA.bit.DBTPS = 7; // Dead-band timer prescaler
+    EvaRegs.DBTCONA.bit.DBTPS = 3; // Dead-band timer prescaler
 
     EvaRegs.CMPR1 = 3000;
     EvaRegs.CMPR2 = 2000;

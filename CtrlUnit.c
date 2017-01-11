@@ -13,17 +13,17 @@ const FilterCoeff AC1 =
 {
     _IQ30(0),
     _IQ30(-1),
-    _IQ30(-1.991208300207381),
-    _IQ30(0.99125145496597722),
-    _IQ30(0.057291205723457118)
+    _IQ30(-1.9915249934537753),
+    _IQ30(0.99157152241187263      ),
+    _IQ30(0.027722042757883023      )
 };
 const FilterCoeff AC2 =
 {
     _IQ30(0),
     _IQ30(-1),
-    _IQ30(-1.838801833563001),
-    _IQ30(0.85210829515935227),
-    _IQ30(0.057291205723457118)
+    _IQ30(-1.9277693004408991       ),
+    _IQ30(0.93098913281474049      ),
+    _IQ30(0.027722042757883023      )
 };
 SecOrdFilter AC1s={0,0},AC2s={0,0};
 _iq20 SecOrdFil(const FilterCoeff* fc, SecOrdFilter* sof, _iq20 input);
@@ -34,12 +34,7 @@ _iq26 PI_calc(PICtrlr *v, _iq20 Errset);
 Uint64 g_SysCount = 0;
 static _iq22 DCvoltage_log[3] = {0,0,0}; // -2^9 ~ 2^9-2^-22
 
-
 static _iq22 SetVol = 12;                        // Defined in SCI ISR.
-static _iq26 DCvoltageError_log[3] = {0,0,0};
-static _iq26 DCvoltageError_1st[3] = {0,0,0}; // After Notch filter
-static _iq26 DCvoltageError_2nd[2] = {0,0}; // After Low-pass filter
-
 
 PICtrlr DCvoltagePICtrlr={0,DCItglMax,DCItglMin,DCKp,DCKi,0,DCOutMax,DCOutMin};
 
@@ -47,11 +42,10 @@ static _iq30 ACPhase       = 0x00000000;
 static _iq30 SetPhaseDelay = 0x00000000;
 static _iq30 DesiredPhase  = _IQ30(0);
 static _iq20 ACcurrentRef  = 0x00000000;
-static _iq26 ACcurrentError_log[3] = {0,0,0};
 
 PICtrlr ACcurrentPICtrlr={0,ACItglMax,ACItglMin,ACKp,ACKi,0,ACOutMax,ACOutMin};
 
-extern unsigned char Danger = 0x00;
+extern unsigned char Danger = 0xFF;
 
 void ControlledRect();
 void UncontrolledRect();
@@ -77,9 +71,6 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     // }
 
     DCtemp = SetVol-newDCvoltage;
-    DCvoltageError_log[2]=DCvoltageError_log[1];
-    DCvoltageError_log[1]=DCvoltageError_log[0];
-    DCvoltageError_log[0]=DCtemp;
 
     // DCtemp =
        // -_IQ26mpyIQX(_IQ30(-1.519242529784681), 30, DCvoltageError_1st[1], 26)
@@ -101,17 +92,16 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     // DCtemp is the ACcurrent amplitude reference
 
     // ACcurrentRef = _IQ26mpyIQX(DCtemp, 26, _IQ30sinPU(DesiredPhase), 30);
-    ACcurrentRef = _IQ20mpyIQX(_IQ26(1), 26, _IQ30sinPU(DesiredPhase), 30);
+    ACcurrentRef = _IQ20mpyIQX(_IQ26(0), 26, _IQ30sinPU(DesiredPhase), 30);
     // Generate current reference.
 //    cmpr = _IQ15mpyIQX((ACcurrentRef+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
 //    EvaRegs.CMPR3 = cmpr;
 //    // Display current reference through PWM5.
 
-    ACtemp = _IQ20mpyIQX(ACGain, 30, (long)newACcurrent, 0) + ACOffset;
+    ACtemp = _IQ20mpyIQX(ACGain, 30, (long)newACcurrent - ACOffset, 0) ;
     ACtemp = SecOrdFil(&AC1, &AC1s, ACtemp);
     ACtemp = SecOrdFil(&AC2, &AC2s, ACtemp);
-    cmpr = _IQ15mpyIQX((ACcurrentRef+_IQ20(1.0)), 20, _IQ18(3750), 18)>>15;
-    EvaRegs.CMPR3 = cmpr;
+
     // Display current observation through PWM5.
     if ((ACtemp>_IQ20(0.7))||(ACtemp<_IQ20(-0.7)))
     {
@@ -121,9 +111,8 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     }
 
     ACtemp = ACcurrentRef-ACtemp;
-    ACcurrentError_log[2]=ACcurrentError_log[1];
-    ACcurrentError_log[1]=ACcurrentError_log[0];
-    ACcurrentError_log[0]=ACtemp;
+    cmpr = _IQ15mpyIQX((ACcurrentRef+_IQ20(1.0)), 20, _IQ18(3750), 18)>>15;
+    EvaRegs.CMPR3 = cmpr;
 
     ACctrl = PI_calc(&ACcurrentPICtrlr, ACtemp);
 

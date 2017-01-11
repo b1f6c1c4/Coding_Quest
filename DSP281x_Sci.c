@@ -54,11 +54,11 @@ interrupt void SCIRXINTA_ISR(void)    // SCI-A
     }
     else if (temp == '6')
     {
-        AdjPhaseDelay(1);
+        AdjPhaseDelay(-1);
     }
     else if (temp == '4')
     {
-        AdjPhaseDelay(-1);
+        AdjPhaseDelay(1);
     }
     else if (temp == '5')
     {
