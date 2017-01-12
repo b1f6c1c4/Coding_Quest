@@ -53,11 +53,12 @@ static _iq30 SetPhaseDelay = 0x00000000;
 static _iq30 DesiredPhase  = _IQ30(0);
 static _iq20 ACcurrentRef  = 0x00000000;
 static _iq26 ACRef_ampli = _IQ26(0);
+static int cmproffset = 0;
 
 #define ACKp _IQ15(0)
 #define ACKi _IQ15(0)
 
-static long ACOffset = 16384;
+
 
 PICtrlr ACcurrentPICtrlr={0,ACItglMax,ACItglMin,ACKp,ACKi,0,ACOutMax,ACOutMin};
 
@@ -115,8 +116,8 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
 //    // Display current reference through PWM5.
 
     ACtemp = _IQ20mpyIQX(ACGain, 30, (long)newACcurrent - ACOffset, 0) ;
-//    ACtemp = SecOrdFil(&AC1, &AC1s, ACtemp);
-//    ACtemp = SecOrdFil(&AC2, &AC2s, ACtemp);
+    ACtemp = SecOrdFil(&AC1, &AC1s, ACtemp);
+    ACtemp = SecOrdFil(&AC2, &AC2s, ACtemp);
     //ACtemp = FirFil(ACfir, ACfir_d, sizeof(ACfir_d)/sizeof(*ACfir_d), ACtemp);
 
     // Display current observation through PWM5.
@@ -137,8 +138,8 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
         return;
 
 //    cmpr = _IQ15mpyIQX((ACctrl+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
-    EvaRegs.CMPR1 = cmpr;
-    EvaRegs.CMPR2 = cmpr;
+    EvaRegs.CMPR1 = cmpr + cmproffset;
+    EvaRegs.CMPR2 = cmpr + cmproffset;
     ControlledRect();
 }
 
@@ -274,19 +275,20 @@ void AdjACKp(int dir)
 void AdjACKi(int dir)
 {
     if(dir>0)
-        ACcurrentPICtrlr.Ki += _IQ15(0.25);
+        ACcurrentPICtrlr.Ki += _IQ15(250);
     else if(dir<0)
-        ACcurrentPICtrlr.Ki -= _IQ15(0.25);
+        ACcurrentPICtrlr.Ki -= _IQ15(250);
     else
         ACcurrentPICtrlr.Ki = ACKi;
 }
 
-void AdjACOffset(int dir)
+
+void Adjcmproffset(int dir)
 {
     if(dir>0)
-        ACOffset += 5;
+        cmproffset += 5;
     else if(dir<0)
-        ACOffset -= 5;
+        cmproffset -= 5;
     else
-        ACOffset = 16666;
+        cmproffset = 0;
 }

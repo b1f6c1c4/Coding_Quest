@@ -120,14 +120,14 @@ interrupt void SCIRXINTA_ISR(void)    // SCI-A
     }
     else if (temp == '9')
     {
-        AdjACOffset(1);
+        Adjcmproffset(1);
     }
     else if (temp == '7')
     {
-        AdjACOffset(-1);
+        Adjcmproffset(-1);
     }
     else if (temp == '8')
     {
-        AdjACOffset(0);
+        Adjcmproffset(0);
     }
 }

@@ -80,15 +80,15 @@ interrupt void CAPINT1_ISR(void)    // EV-A
 }
 interrupt void CAPINT2_ISR(void)    // EV-B
 {
-    EvaRegs.EVAIFRC.bit.CAP2INT=1;
-    PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
-    if ((g_SysCount - local_count2 > 160)&&(g_SysCount - local_count1 > 80))
-    {
-        local_count2 = g_SysCount;
-        // After the falling edge, the circuit malfunctions. I donno why.
-        SetPhaseZero();
-        EALLOW;
-        GpioDataRegs.GPACLEAR.bit.GPIOA5=1;
-        EDIS;
-    }
+//    EvaRegs.EVAIFRC.bit.CAP2INT=1;
+//    PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
+//    if ((g_SysCount - local_count2 > 160)&&(g_SysCount - local_count1 > 80))
+//    {
+//        local_count2 = g_SysCount;
+//        // After the falling edge, the circuit malfunctions. I donno why.
+//        SetPhaseZero();
+//        EALLOW;
+//        GpioDataRegs.GPACLEAR.bit.GPIOA5=1;
+//        EDIS;
+//    }
 }

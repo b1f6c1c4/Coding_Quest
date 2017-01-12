@@ -7,6 +7,7 @@ extern void DSP28x_usDelay(Uint32 Count);
 
 #define DC_VOLT 0x5
 #define AC_CURR 0x0
+#define AC_VOLT 0x1
 //0x2,0x4 won't work
 // This function initializes ADC to a known state.
 void InitAdc(void)
@@ -56,8 +57,8 @@ void InitAdc(void)
 
     AdcRegs.ADCCHSELSEQ1.bit.CONV00 = DC_VOLT;
     AdcRegs.ADCCHSELSEQ1.bit.CONV01 = DC_VOLT;
-    AdcRegs.ADCCHSELSEQ1.bit.CONV02 = DC_VOLT;
-    AdcRegs.ADCCHSELSEQ1.bit.CONV03 = DC_VOLT;
+    AdcRegs.ADCCHSELSEQ1.bit.CONV02 = AC_VOLT;
+    AdcRegs.ADCCHSELSEQ1.bit.CONV03 = AC_VOLT;
     AdcRegs.ADCCHSELSEQ2.bit.CONV04 = AC_CURR;
     AdcRegs.ADCCHSELSEQ2.bit.CONV05 = AC_CURR;
     AdcRegs.ADCCHSELSEQ2.bit.CONV06 = AC_CURR;
@@ -66,8 +67,8 @@ void InitAdc(void)
     AdcRegs.ADCCHSELSEQ3.bit.CONV09 = AC_CURR;
     AdcRegs.ADCCHSELSEQ3.bit.CONV10 = AC_CURR;
     AdcRegs.ADCCHSELSEQ3.bit.CONV11 = AC_CURR;
-    AdcRegs.ADCCHSELSEQ4.bit.CONV12 = DC_VOLT;
-    AdcRegs.ADCCHSELSEQ4.bit.CONV13 = DC_VOLT;
+    AdcRegs.ADCCHSELSEQ4.bit.CONV12 = AC_VOLT;
+    AdcRegs.ADCCHSELSEQ4.bit.CONV13 = AC_VOLT;
     AdcRegs.ADCCHSELSEQ4.bit.CONV14 = DC_VOLT;
     AdcRegs.ADCCHSELSEQ4.bit.CONV15 = DC_VOLT;
 }
@@ -77,6 +78,7 @@ interrupt void  ADCINT_ISR(void)    // ADC
 {
     int16 ACcurrent = 0;
     int16 DCvoltage = 0;
+    int16 ACvoltage = 0;
 
     AdcRegs.ADCST.bit.INT_SEQ1_CLR = 1;
     AdcRegs.ADCST.bit.INT_SEQ2_CLR = 1;
@@ -85,8 +87,8 @@ interrupt void  ADCINT_ISR(void)    // ADC
 
     DCvoltage += AdcRegs.ADCRESULT0  >> 4;
     DCvoltage += AdcRegs.ADCRESULT1  >> 4;
-    DCvoltage += AdcRegs.ADCRESULT2  >> 4;
-    DCvoltage += AdcRegs.ADCRESULT3  >> 4;
+    ACvoltage += AdcRegs.ADCRESULT2  >> 4;
+    ACvoltage += AdcRegs.ADCRESULT3  >> 4;
     ACcurrent += AdcRegs.ADCRESULT4  >> 4;
     ACcurrent += AdcRegs.ADCRESULT5  >> 4;
     ACcurrent += AdcRegs.ADCRESULT6  >> 4;
@@ -95,8 +97,8 @@ interrupt void  ADCINT_ISR(void)    // ADC
     ACcurrent += AdcRegs.ADCRESULT9  >> 4;
     ACcurrent += AdcRegs.ADCRESULT10 >> 4;
     ACcurrent += AdcRegs.ADCRESULT11 >> 4;
-    DCvoltage += AdcRegs.ADCRESULT12 >> 4;
-    DCvoltage += AdcRegs.ADCRESULT13 >> 4;
+    ACvoltage += AdcRegs.ADCRESULT12 >> 4;
+    ACvoltage += AdcRegs.ADCRESULT13 >> 4;
     DCvoltage += AdcRegs.ADCRESULT14 >> 4;
     DCvoltage += AdcRegs.ADCRESULT15 >> 4;
 

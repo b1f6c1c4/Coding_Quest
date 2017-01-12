@@ -9,10 +9,10 @@
 #define CTRLUNIT_H_
 #define DeltaPhase 5368709   // 100us / 20ms * 2^30
 #define ACGain _IQ30(0.0002275)   // Number in the parenthesis take A/ACcurrent as unit
- // Number in the parenthesis take Ampere as unit
+#define ACOffset 16384 // Number in the parenthesis take Ampere as unit
 #define DCGain _IQ30(0.015625)      // Number in the parenthesis take V/DCvoltage as unit
 #define DCOffset _IQ22(0.0) // Number in the parenthesis take Voltage as unit
-#define SampPeri _IQ30(0.1) // Number in the parenthesis take second as unit)
+#define SampPeri _IQ30(0.0001) // Number in the parenthesis take second as unit)
 //  PIcontroller definition
 typedef struct
 {
@@ -65,6 +65,6 @@ void AdjSetVol(int dir);
 void AdjACRef(int dir);
 void AdjACKp(int dir);
 void AdjACKi(int dir);
-void AdjACOffset(int dir);
+void Adjcmproffset(int dir);
 
 #endif /* CTRLUNIT_H_ */
