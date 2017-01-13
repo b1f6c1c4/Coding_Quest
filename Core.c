@@ -37,18 +37,18 @@ _iq20 g_DCvoltage = 0;
 
 // Current Loop Controller
 static PIc_t m_PI = {
-    _IQ20(+100),  // PosSat
-    _IQ20(-100),  // NegSat
-    _IQ20(0.3),   // Kp
-    _IQ20(10e-4), // Ki
+    _IQ20(+1000), // PosSat
+    _IQ20(-1000), // NegSat
+    _IQ20(0.6),   // Kp
+    _IQ20(12e-5), // Ki
     0,            // Enabled
     {0, 0},       // Node0
 };
 static PIc_t m_PI2 = {
-    _IQ20(+100),  // PosSat
-    _IQ20(-100),  // NegSat
-    _IQ20(1),     // Kp
-    _IQ20(50e-4), // Ki
+    _IQ20(+1000), // PosSat
+    _IQ20(-1000), // NegSat
+    _IQ20(0.6),   // Kp
+    _IQ20(10e-3), // Ki
     0,            // Enabled
     {0, 0},       // Node0
 };
@@ -334,4 +334,6 @@ void VoltageController()
 
     // CosPhi
     g_TargetACcurrent.Im = _IQ20div(g_TargetACcurrent.Re, g_TargetCosPhi);
+    if (g_TargetLeadOrLag == TARG_LAG)
+        g_TargetACcurrent.Im = -g_TargetACcurrent.Im;
 }
