@@ -11,6 +11,8 @@ typedef struct
 
 _iq20 Pha_Rms(Phasor_t p);
 _iq20 Pha_Phase(Phasor_t p);
+Phasor_t Pha_SMul(Phasor_t p1, _iq20 val);
+Phasor_t Pha_SDiv(Phasor_t p1, _iq20 val);
 Phasor_t Pha_Norm(Phasor_t p);
 
 Phasor_t Pha_Add(Phasor_t p1, Phasor_t p2);
