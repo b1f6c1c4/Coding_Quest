@@ -1,5 +1,6 @@
 #include "DSP281x_Device.h"    // DSP281x Headerfile Include File
 #include "DSP281x_Examples.h"   // DSP281x Examples Include File
+#include "Interface.h"
 
 #define ADC_usDELAY  8000L
 #define ADC_usDELAY2 20L
@@ -73,7 +74,6 @@ void InitAdc(void)
     AdcRegs.ADCCHSELSEQ4.bit.CONV15 = DC_VOLT;
 }
 
-void Processing(int16, int16);
 interrupt void  ADCINT_ISR(void)    // ADC
 {
     int16 ACcurrent = 0;
@@ -102,7 +102,7 @@ interrupt void  ADCINT_ISR(void)    // ADC
     DCvoltage += AdcRegs.ADCRESULT14 >> 4;
     DCvoltage += AdcRegs.ADCRESULT15 >> 4;
 
-    Processing(ACcurrent, DCvoltage);
+    RawProcess(ACvoltage >> 2, ACcurrent >> 3, DCvoltage >> 2);
 
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
 }

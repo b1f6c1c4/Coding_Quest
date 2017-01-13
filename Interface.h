@@ -9,6 +9,6 @@ void IF_SetPwm(_iq20 level);
 // shutdown all IGBTs
 void IF_Off();
 
-void RawProcess(unsigned long uAC, unsigned long iAC, unsigned long uDC);
+void RawProcess(long uAC, long iAC, long uDC);
 
 #endif

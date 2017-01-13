@@ -1,6 +1,6 @@
 #include "DSP281x_Device.h"     // DSP281x Headerfile Include File
 #include "DSP281x_Examples.h"   // DSP281x Examples Include File
-#include "CtrlUnit.h"
+#include "Core.h"
 
 void InitSci(void)
 {
@@ -44,90 +44,19 @@ interrupt void SCIRXINTA_ISR(void)    // SCI-A
     SciaRegs.SCIFFRX.bit.RXFFINTCLR = 1;    // clear Receive interrupt flag
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
     temp = SciaRegs.SCIRXBUF.all;
-    if (temp == 'x')
+    switch (temp)
     {
-        SetDanger();
-    }
-    else if (temp == 'c')
-    {
-        ClearDanger();
-    }
-    else if (temp == '6')
-    {
-        AdjPhaseDelay(-1);
-    }
-    else if (temp == '4')
-    {
-        AdjPhaseDelay(1);
-    }
-    else if (temp == '5')
-    {
-        AdjPhaseDelay(0);
-    }
-    else if (temp == '+')
-    {
-        AdjSetVol(1);
-    }
-    else if (temp == '-')
-    {
-        AdjSetVol(-1);
-    }
-    else if (temp == '0')
-    {
-        AdjSetVol(0);
-    }
-    else if (temp == '3')
-    {
-        AdjACRef(1);
-        EALLOW;
-        GpioDataRegs.GPATOGGLE.all=0x0040;
-        EDIS;
-    }
-    else if (temp == '1')
-    {
-        AdjACRef(-1);
-        EALLOW;
-        GpioDataRegs.GPATOGGLE.all=0x0040;
-        EDIS;
-    }
-    else if (temp == '2')
-    {
-        AdjACRef(0);
-    }
-    else if (temp == 'e')
-    {
-        AdjACKp(1);
-    }
-    else if (temp == 'q')
-    {
-        AdjACKp(-1);
-    }
-    else if (temp == 'w')
-    {
-        AdjACKp(0);
-    }
-    else if (temp == 'd')
-    {
-        AdjACKi(1);
-    }
-    else if (temp == 'a')
-    {
-        AdjACKi(-1);
-    }
-    else if (temp == 's')
-    {
-        AdjACKi(0);
-    }
-    else if (temp == '9')
-    {
-        Adjcmproffset(1);
-    }
-    else if (temp == '7')
-    {
-        Adjcmproffset(-1);
-    }
-    else if (temp == '8')
-    {
-        Adjcmproffset(0);
+        case 'x':
+            ChangeState(S_IDLE);
+            break;
+        case 'm':
+            ChangeState(S_IMP);
+            break;
+        case 'c':
+            ChangeState(S_CURR);
+            break;
+        case 'f':
+            ChangeState(S_FULL);
+            break;
     }
 }

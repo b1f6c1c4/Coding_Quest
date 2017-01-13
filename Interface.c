@@ -6,8 +6,11 @@
 
 // TODO
 #define UAC_COEF _IQ20(0.0)
+#define UAC_OFFSET 0
 #define IAC_COEF _IQ20(0.0)
+#define IAC_OFFSET 0
 #define UDC_COEF _IQ20(0.0)
+#define UDC_OFFSET 0
 
 void IF_SetPwm(_iq20 level)
 {
@@ -31,10 +34,10 @@ void IF_Off()
     EDIS;
 }
 
-void RawProcess(unsigned long uAC, unsigned long iAC, unsigned long uDC)
+void RawProcess(long uAC, long iAC, long uDC)
 {
     Process(
-        _IQ20rmpy(uAC, UAC_COEF),
-        _IQ20rmpy(iAC, IAC_COEF),
-        _IQ20rmpy(uDC, UDC_COEF));
+        _IQ20rmpy(uAC - UAC_OFFSET, UAC_COEF),
+        _IQ20rmpy(iAC - IAC_OFFSET, IAC_COEF),
+        _IQ20rmpy(uDC - UDC_OFFSET, UDC_COEF));
 }
