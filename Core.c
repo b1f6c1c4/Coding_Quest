@@ -11,9 +11,16 @@
 #define MAX_R _IQ20(300.0)
 #define MIN_X _IQ20(2.0)
 #define MAX_X _IQ20(5.0)
+// Min Udc/Uac for current loop mode
+#define MIN_UDC_UAC _IQ20(1.5)
 
 // State
 State_t g_State = S_IDLE;
+
+// Target
+_iq20 g_TargetDCvoltage = 0;
+_iq20 g_TargetCosPhi = _IQ20(1);
+Phasor_t g_TargetACcurrent = {0, 0};
 
 // Measurement
 _iq20 g_ACvoltageRms = 0;
@@ -27,7 +34,7 @@ Phasor_t g_Impedance = {0, 0};
 
 _iq20 g_DCvoltage = 0;
 
-// Controller
+// Current Loop Controller
 static PIc_t m_PI = {
     _IQ20(+100),  // PosSat
     _IQ20(-100),  // NegSat
@@ -45,10 +52,16 @@ static PIc_t m_PI2 = {
     {0, 0},       // Node0
 };
 
-_iq20 Controller();
+// Public Functions
+
+int CheckImpedance();
+_iq20 CurrentController();
+void VoltageController();
 
 int ChangeState(State_t st)
 {
+    int ret;
+
     switch (g_State)
     {
         case S_IDLE:
@@ -58,17 +71,30 @@ int ChangeState(State_t st)
                     return 0;
                 case S_IMP:
                     if (g_ACvoltageRms > SAFE_VOLT)
-                        return 1;
+                        return 2;
                     g_State = S_IMP;
                     IF_SetPwm(0); // Shortcut AC
                     return 0;
-                case S_RUN:
-                    if (g_Impedance.Re < MIN_R ||
-                        g_Impedance.Re > MAX_R ||
-                        g_Impedance.Im < MIN_X ||
-                        g_Impedance.Im > MAX_X)
-                        return 1;
-                    g_State = S_RUN;
+                case S_CURR:
+                    ret = CheckImpedance();
+                    if (ret)
+                        return ret;
+                    if (_IQ20rmpy(MIN_UDC_UAC, g_ACvoltageRms) > g_DCvoltage)
+                        return 2;
+
+                    g_State = S_CURR;
+                    PIc_Enable(&m_PI);
+                    PIc_Enable(&m_PI2);
+                    return 0;
+                case S_FULL:
+                    ret = CheckImpedance();
+                    if (ret)
+                        return ret;
+
+                    // TODO
+                    return 999;
+
+                    g_State = S_FULL;
                     PIc_Enable(&m_PI);
                     PIc_Enable(&m_PI2);
                     return 0;
@@ -83,12 +109,14 @@ int ChangeState(State_t st)
                     return 0;
                 case S_IMP:
                     return 0;
-                case S_RUN:
+                case S_CURR:
+                    return 1;
+                case S_FULL:
                     return 1;
                 default:
                     return -1;
             }
-        case S_RUN:
+        case S_CURR:
             switch (st)
             {
                 case S_IDLE:
@@ -98,7 +126,27 @@ int ChangeState(State_t st)
                     return 0;
                 case S_IMP:
                     return 1;
-                case S_RUN:
+                case S_CURR:
+                    return 0;
+                case S_FULL:
+                    return 1;
+                default:
+                    return -1;
+            }
+        case S_FULL:
+            switch (st)
+            {
+                case S_IDLE:
+                    g_State = S_IDLE;
+                    PIc_Disable(&m_PI);
+                    PIc_Disable(&m_PI2);
+                    // TODO
+                    return 0;
+                case S_IMP:
+                    return 1;
+                case S_CURR:
+                    return 1;
+                case S_FULL:
                     return 0;
                 default:
                     return -1;
@@ -126,11 +174,31 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
         return;
     }
 
-    ratio = Controller();
+    if (g_State == S_FULL)
+    {
+        // g_TargetDCvoltage, g_TargetCosPhi will
+        // be used to adjust g_TargetACcurrent
+        VoltageController();
+    }
+
+    // g_TargetACcurrent will be used
+    ratio = CurrentController();
     IF_SetPwm(ratio);
 }
 
-_iq20 Controller()
+// Private Functions
+
+int CheckImpedance()
+{
+    if (g_Impedance.Re < MIN_R ||
+        g_Impedance.Re > MAX_R ||
+        g_Impedance.Im < MIN_X ||
+        g_Impedance.Im > MAX_X)
+        return 2;
+    return 0;
+}
+
+_iq20 CurrentController()
 {
     Phasor_t ref, curr;
     Phasor_t temp1, temp2, temp3;
@@ -159,4 +227,9 @@ _iq20 Controller()
 
     // Ratio
     return _IQ20div(targV, g_DCvoltage);
+}
+
+void VoltageController()
+{
+    // TODO
 }

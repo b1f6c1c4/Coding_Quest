@@ -8,18 +8,29 @@ typedef enum
 {
     S_IDLE,
     S_IMP,
-    S_RUN
+    S_CURR,
+    S_FULL
 } State_t;
 
+// State
 extern State_t g_State;
 
+// Target
+extern _iq20 g_TargetDCvoltage;
+extern _iq20 g_TargetCosPhi;
+extern Phasor_t g_TargetACcurrent; // DON'T MODIFY IN CURR MODE
+
+// Measurement
 _iq20 g_ACvoltageRms;
 extern Phasor_t g_ACvoltage;
 extern Phasor_t g_ACcurrent;
 extern Phasor_t g_Impedance;
 extern _iq20 g_DCvoltage;
 
-// Return: 0 is OK
+// Return
+// 0 : OK
+// 1 : Go S_Idle First
+// 2 : For Safety Consideration
 int ChangeState(State_t st);
 
 void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC);
