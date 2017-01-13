@@ -407,11 +407,7 @@ interrupt void MXINTA_ISR(void)    // McBSP-A
 // INT9.1
 // Moved to DSP281x_Sci.c
 // INT9.2
-interrupt void SCITXINTA_ISR(void)    // SCI-A
-{
-    asm ("     ESTOP0");
-    for(;;);
-}
+// Moved to DSP281x_Sci.c
 // INT9.3
 interrupt void SCIRXINTB_ISR(void)    // SCI-B
 {

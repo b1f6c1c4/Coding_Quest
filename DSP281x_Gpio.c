@@ -24,7 +24,7 @@ void InitGpio(void)
     // Assumption: setting 1 is dangerous (Short the current-limiting resistor)
 
     GpioMuxRegs.GPFMUX.bit.SCIRXDA_GPIOF5=1;
-    // GpioMuxRegs.GPFMUX.bit.SCITXDA_GPIOF4=0;
+    GpioMuxRegs.GPFMUX.bit.SCITXDA_GPIOF4=1;
     EDIS;
 }
 

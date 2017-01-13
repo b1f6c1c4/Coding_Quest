@@ -59,13 +59,13 @@ void EnableInterrupts()
     PieCtrlRegs.PIEACK.all = 0xFFFF;
 
     // Example Specified
-    PieCtrlRegs.PIEIER1.bit.INTx6=1; //ADC
-    PieCtrlRegs.PIEIER9.bit.INTx1=1; //UART
-    IER |= M_INT1;
-    IER |= M_INT9;
+    PieCtrlRegs.PIEIER1.bit.INTx6 = 1; //ADC
+    PieCtrlRegs.PIEIER3.bit.INTx5 = 1; // Enable CAP1
+    PieCtrlRegs.PIEIER3.bit.INTx6 = 1; // Enable CAP2
+    PieCtrlRegs.PIEIER9.bit.INTx1 = 1; //UART
+    PieCtrlRegs.PIEIER9.bit.INTx2 = 1; //UART
+    IER |= M_INT1 + M_INT3 + M_INT9;
 
-    // Enable Interrupts at the CPU level
-    EINT;
-
+    EINT;// Enable Interrupts at the CPU level
     ERTM;// Example Specified
 }

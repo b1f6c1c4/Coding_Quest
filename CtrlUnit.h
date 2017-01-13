@@ -59,6 +59,8 @@ void SetPhasePI(void);
 
 void SetDanger(void);
 void ClearDanger(void);
+void OpenLoopCtrl(void);
+void CloseLoopCtrl(void);
 
 void AdjPhaseDelay(int dir);
 void AdjSetVol(int dir);
@@ -66,5 +68,8 @@ void AdjACRef(int dir);
 void AdjACKp(int dir);
 void AdjACKi(int dir);
 void Adjcmproffset(int dir);
+
+extern long DataToSend;
+extern unsigned char SendFlag;
 
 #endif /* CTRLUNIT_H_ */

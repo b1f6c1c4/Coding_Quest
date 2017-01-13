@@ -14,16 +14,16 @@ const FilterCoeff AC1 =
     _IQ30(0),
     _IQ30(-1),
     _IQ30(-1.9915249934537753),
-    _IQ30(0.99157152241187263      ),
-    _IQ30(0.027722042757883023      )
+    _IQ30(0.99157152241187263),
+    _IQ30(0.027722042757883023)
 };
 const FilterCoeff AC2 =
 {
     _IQ30(0),
     _IQ30(-1),
-    _IQ30(-1.9277693004408991       ),
-    _IQ30(0.93098913281474049      ),
-    _IQ30(0.027722042757883023      )
+    _IQ30(-1.9277693004408991),
+    _IQ30(0.93098913281474049),
+    _IQ30(0.027722042757883023)
 };
 static SecOrdFilter AC1s={0,0},AC2s={0,0};
 _iq20 SecOrdFil(const FilterCoeff* fc, SecOrdFilter* sof, _iq20 input);
@@ -55,6 +55,8 @@ static _iq20 ACcurrentRef  = 0x00000000;
 static _iq26 ACRef_ampli = _IQ26(0);
 static int cmproffset = 0;
 
+long probe1 = 0x0000;
+
 #define ACKp _IQ15(0)
 #define ACKi _IQ15(0)
 
@@ -62,7 +64,11 @@ static int cmproffset = 0;
 
 PICtrlr ACcurrentPICtrlr={0,ACItglMax,ACItglMin,ACKp,ACKi,0,ACOutMax,ACOutMin};
 
-extern unsigned char Danger = 0xFF;
+static unsigned char Danger = 0xFF;
+static unsigned char CloseLoop = 0x00;
+
+long DataToSend = 0x00000000;
+unsigned char SendFlag = 0xFF;
 
 void ControlledRect();
 void UncontrolledRect();
@@ -76,6 +82,9 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     g_SysCount++;
     ACPhase += DeltaPhase;
     DesiredPhase = ACPhase + SetPhaseDelay;
+
+//    SendFlag   = (g_SysCount & 0xF0) == 0;
+    DataToSend = g_SysCount;
 
     DCvoltage_log[2] = DCvoltage_log[1];
     DCvoltage_log[1] = DCvoltage_log[0];
@@ -116,8 +125,10 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
 //    // Display current reference through PWM5.
 
     ACtemp = _IQ20mpyIQX(ACGain, 30, (long)newACcurrent - ACOffset, 0) ;
+    ACtemp = 224400;
     ACtemp = SecOrdFil(&AC1, &AC1s, ACtemp);
     ACtemp = SecOrdFil(&AC2, &AC2s, ACtemp);
+    probe1 = ACtemp;
     //ACtemp = FirFil(ACfir, ACfir_d, sizeof(ACfir_d)/sizeof(*ACfir_d), ACtemp);
 
     // Display current observation through PWM5.
@@ -137,7 +148,8 @@ void Processing(int16 newACcurrent, int16 newDCvoltage)
     if (Danger)
         return;
 
-//    cmpr = _IQ15mpyIQX((ACctrl+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
+    if (CloseLoop)
+        cmpr = _IQ15mpyIQX((ACctrl+_IQ26(1.0)), 26, _IQ18(3750), 18)>>15;
     EvaRegs.CMPR1 = cmpr + cmproffset;
     EvaRegs.CMPR2 = cmpr + cmproffset;
     ControlledRect();
@@ -176,6 +188,10 @@ void SetDanger(void)
     Danger=0xFF;
     UncontrolledRect();
     PI_reset(&ACcurrentPICtrlr);
+    AC1s.Node1 = 0x00;
+    AC1s.Node2 = 0x00;
+    AC2s.Node1 = 0x00;
+    AC2s.Node2 = 0x00;
 }
 
 void ClearDanger(void)
@@ -207,7 +223,7 @@ _iq26 PI_calc(PICtrlr *v, _iq20 Errset)
 _iq20 SecOrdFil(const FilterCoeff* fc, SecOrdFilter* sof, _iq20 input)
 {
     _iq20 temp1,temp2;
-    temp1 = _IQ20mpyIQX(fc->Gain, 30, input, 20);
+    temp1 = input;
     temp1 -= _IQ20mpyIQX(fc->Denom[0],30,sof->Node1,20);
     temp1 -= _IQ20mpyIQX(fc->Denom[1],30,sof->Node2,20);
     temp2 = temp1;
@@ -215,7 +231,7 @@ _iq20 SecOrdFil(const FilterCoeff* fc, SecOrdFilter* sof, _iq20 input)
     temp2 += _IQ20mpyIQX(fc->Numer[1],30,sof->Node2,20);
     sof->Node2 = sof->Node1;
     sof->Node1 = temp1;
-    return temp2;
+    return _IQ20mpyIQX(fc->Gain, 30, temp2, 20);
 }
 
 _iq20 FirFil(const _iq30* fc, _iq20* sof, int n, _iq20 input)
@@ -291,4 +307,14 @@ void Adjcmproffset(int dir)
         cmproffset -= 5;
     else
         cmproffset = 0;
+}
+
+void OpenLoopCtrl(void)
+{
+    CloseLoop = 0x00;
+}
+
+void CloseLoopCtrl(void)
+{
+    CloseLoop = 0xFF;
 }
