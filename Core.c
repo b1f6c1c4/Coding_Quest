@@ -2,6 +2,7 @@
 #include "Interface.h"
 #include "PI.h"
 #include "Phasor.h"
+#include "FilterIIR.h"
 
 // Parameters
 // Max Uac for shortcut
@@ -60,6 +61,90 @@ static PI_t m_PI3 = {
     _IQ20(10e-6), // Ki
     0,            // Enabled
     0,            // Node0
+};
+
+// DCvoltage IIR Filter
+static IIR_t m_IIR[5] = {
+    {
+        // Numer
+        {
+            _IQ30(-1.9959545554580642),
+            _IQ30(1)
+        },
+        // Denom
+        {
+            _IQ30(-1.9988294637104755),
+            _IQ30( 0.99884318920216619)
+        },
+        // Gain
+        _IQ30(0.003392826560444677),
+        0, // Node1
+        0  // Node2
+    },
+    {
+        // Numer
+        {
+            _IQ30(-1.995030143398858),
+            _IQ30(1)
+        },
+        // Denom
+        {
+            _IQ30(-1.9966306594202408),
+            _IQ30( 0.9966443784761313)
+        },
+        // Gain
+        _IQ30(0.0027604530656781781),
+        0, // Node1
+        0  // Node2
+    },
+    {
+        // Numer
+        {
+            _IQ30(-1.992114693638525),
+            _IQ30(1)
+        },
+        // Denom
+        {
+            _IQ30(-1.9947593314507899),
+            _IQ30( 0.99477305167546459)
+        },
+        // Gain
+        _IQ30(0.0017399735718241316),
+        0, // Node1
+        0  // Node2
+    },
+    {
+        // Numer
+        {
+            _IQ30(-1.9809244979649847),
+            _IQ30(1)
+        },
+        // Denom
+        {
+            _IQ30(-1.993397689134718),
+            _IQ30( 0.99341141403984989)
+        },
+        // Gain
+        _IQ30(0.00071950426817661648),
+        0, // Node1
+        0  // Node2
+    },
+    {
+        // Numer
+        {
+            _IQ30(-1.8448334120218466),
+            _IQ30(1)
+        },
+        // Denom
+        {
+            _IQ30(-1.9926807688086423),
+            _IQ30( 0.99269449746983485)
+        },
+        // Gain
+        _IQ30(0.00008847691614119181),
+        0, // Node1
+        0  // Node2
+    }
 };
 
 // Public Functions
@@ -171,7 +256,7 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     g_ACvoltage = Sin_Run(&m_ACvoltage, uAC);
     g_ACvoltageRms = Pha_Rms(g_ACvoltage);
     g_ACcurrent = Sin_Run(&m_ACcurrent, iAC);
-    g_DCvoltage = uDC; // TODO: Add filters
+    g_DCvoltage = IIR_RunN(m_IIR, 5, uDC);
 
     if (g_State == S_IDLE)
         return;
