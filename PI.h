@@ -26,7 +26,12 @@ typedef struct
     Phasor_t Node0;
 } PIc_t;
 
+void PI_Enable(PI_t *pic);
+void PI_Disable(PI_t *pic);
 _iq20 PI_Run(PI_t *pic, _iq20 val);
-Phasor_t PI_RunPhasor(PIc_t *pic, Phasor_t val);
+
+void PIc_Enable(PIc_t *pic);
+void PIc_Disable(PIc_t *pic);
+Phasor_t PIc_Run(PIc_t *pic, Phasor_t val);
 
 #endif
