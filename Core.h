@@ -17,7 +17,12 @@ extern State_t g_State;
 
 // Target
 extern _iq20 g_TargetDCvoltage;
+#define TARG_MIN_COSPHI _IQ20(0.85)
+#define TARG_MAX_COSPHI _IQ20(1)
 extern _iq20 g_TargetCosPhi;
+#define TARG_LEAD 1
+#define TARG_LAG  0
+extern unsigned char g_TargetLeadOrLag;
 extern Phasor_t g_TargetACcurrent; // DON'T MODIFY THIS IN CURR MODE
 
 // Measurement

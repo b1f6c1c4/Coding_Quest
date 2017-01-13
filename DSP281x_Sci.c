@@ -58,5 +58,56 @@ interrupt void SCIRXINTA_ISR(void)    // SCI-A
         case 'f':
             ChangeState(S_FULL);
             break;
+        case '1':
+            if (g_State != S_FULL)
+                g_TargetACcurrent.Im -= _IQ20(0.010);
+            break;
+        case '2':
+            if (g_State != S_FULL)
+                g_TargetACcurrent.Im = 0;
+            break;
+        case '3':
+            if (g_State != S_FULL)
+                g_TargetACcurrent.Im += _IQ20(0.010);
+            break;
+        case '4':
+            if (g_State != S_FULL)
+                g_TargetACcurrent.Re -= _IQ20(0.010);
+            break;
+        case '5':
+            if (g_State != S_FULL)
+                g_TargetACcurrent.Re = 0;
+            break;
+        case '6':
+            if (g_State != S_FULL)
+                g_TargetACcurrent.Re += _IQ20(0.010);
+            break;
+        case '7':
+            g_TargetDCvoltage -= _IQ20(5);
+            if (g_TargetDCvoltage < 0)
+                g_TargetDCvoltage = 0;
+            break;
+        case '8':
+            g_TargetDCvoltage = 0;
+            break;
+        case '9':
+            g_TargetDCvoltage += _IQ20(5);
+            break;
+        case 'q':
+            g_TargetCosPhi -= _IQ20(0.01);
+            if (g_TargetCosPhi < TARG_MIN_COSPHI)
+                g_TargetCosPhi = TARG_MIN_COSPHI;
+            break;
+        case 'w':
+            g_TargetLeadOrLag = TARG_LEAD;
+            break;
+        case 'e':
+            g_TargetLeadOrLag = TARG_LAG;
+            break;
+        case 'r':
+            g_TargetCosPhi += _IQ20(0.01);
+            if (g_TargetCosPhi > TARG_MAX_COSPHI)
+                g_TargetCosPhi = TARG_MAX_COSPHI;
+            break;
     }
 }
