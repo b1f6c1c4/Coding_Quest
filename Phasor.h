@@ -1,7 +1,7 @@
 #ifndef PHASOR_H_
 #define PHASOR_H_
 
-#include "FixedPoint.h"
+#include "IQmathLib.h"
 
 typedef struct
 {

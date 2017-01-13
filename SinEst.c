@@ -406,21 +406,20 @@ static SinEst_Im[SINEST_N] = {
     _IQ30(0.007071067811865)
 };
 
-void RunSinEst(SinEst *est, _iq20 data)
+Phasor_t RunSinEst(SinEst *est, _iq20 data)
 {
     int i;
-    _iq20 re = 0;
-    _iq20 im = 0;
+    Phasor_t p;
+
     for (i = 0; i < SINEST_N - 1; i++)
     {
         est->Node[i] = est->Node[i + 1];
-        re += _IQ20mpyIQX(SinEst_Re[i], 30, est->Node[i], 20);
-        im += _IQ20mpyIQX(SinEst_Im[i], 30, est->Node[i], 20);
+        p.Re += _IQ20mpyIQX(SinEst_Re[i], 30, est->Node[i], 20);
+        p.Im += _IQ20mpyIQX(SinEst_Im[i], 30, est->Node[i], 20);
     }
     est->Node[i] = data;
-    re += _IQ20mpyIQX(SinEst_Re[i], 30, est->Node[i], 20);
-    im += _IQ20mpyIQX(SinEst_Im[i], 30, est->Node[i], 20);
+    p.Re += _IQ20mpyIQX(SinEst_Re[i], 30, est->Node[i], 20);
+    p.Im += _IQ20mpyIQX(SinEst_Im[i], 30, est->Node[i], 20);
 
-    est->Phasor.Re = re;
-    est->Phasor.Im = im;
+    return p;
 }
