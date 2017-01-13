@@ -52,6 +52,16 @@ static PIc_t m_PI2 = {
     {0, 0},       // Node0
 };
 
+// Voltage Loop Controller
+static PI_t m_PI3 = {
+    _IQ20(+100),  // PosSat
+    _IQ20(-100),  // NegSat
+    _IQ20(1e-5),  // Kp
+    _IQ20(10e-6), // Ki
+    0,            // Enabled
+    0,            // Node0
+};
+
 // Public Functions
 
 int CheckImpedance();
@@ -91,12 +101,10 @@ int ChangeState(State_t st)
                     if (ret)
                         return ret;
 
-                    // TODO
-                    return 999;
-
                     g_State = S_FULL;
                     PIc_Enable(&m_PI);
                     PIc_Enable(&m_PI2);
+                    PI_Enable(&m_PI3);
                     return 0;
                 default:
                     return -1;
@@ -140,7 +148,7 @@ int ChangeState(State_t st)
                     g_State = S_IDLE;
                     PIc_Disable(&m_PI);
                     PIc_Disable(&m_PI2);
-                    // TODO
+                    PI_Disable(&m_PI3);
                     return 0;
                 case S_IMP:
                     return 1;
@@ -231,5 +239,14 @@ _iq20 CurrentController()
 
 void VoltageController()
 {
-    // TODO
+    _iq20 err;
+
+    // Error
+    err = g_TargetDCvoltage - g_DCvoltage;
+
+    // PI
+    g_TargetACcurrent.Re = PI_Run(&m_PI3, err);
+
+    // CosPhi
+    g_TargetACcurrent.Im = _IQ20div(g_TargetACcurrent.Re, g_TargetCosPhi);
 }

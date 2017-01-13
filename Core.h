@@ -18,7 +18,7 @@ extern State_t g_State;
 // Target
 extern _iq20 g_TargetDCvoltage;
 extern _iq20 g_TargetCosPhi;
-extern Phasor_t g_TargetACcurrent; // DON'T MODIFY IN CURR MODE
+extern Phasor_t g_TargetACcurrent; // DON'T MODIFY THIS IN CURR MODE
 
 // Measurement
 _iq20 g_ACvoltageRms;
