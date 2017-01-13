@@ -4,4 +4,5 @@ Release/
 *~
 *.log
 *.lib
+*.o
 desktop.ini

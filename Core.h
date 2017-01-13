@@ -5,14 +5,16 @@
 
 typedef enum
 {
-    Idle,
-    ImpEst,
-    Running
+    S_IDLE,
+    S_IMP,
+    S_RUN
 } State_t;
 
+_iq20 g_ACvoltageRms;
 extern Phasor_t g_ACvoltage;
 extern Phasor_t g_ACcurrent;
 extern Phasor_t g_Impedance;
+extern _iq20 g_DCvoltage;
 
 extern State_t g_State;
 
