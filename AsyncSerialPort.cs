@@ -131,7 +131,7 @@ namespace Acq
                                     isValid.Value)
                                     m_Buffer.RemoveRange(0, PackageLength);
                                 else
-                                    m_Buffer.RemoveRange(0, m_Buffer.Count - PackageLength);
+                                    m_Buffer.RemoveRange(0, 1);
                             }
                         }
                         catch (OperationCanceledException)
