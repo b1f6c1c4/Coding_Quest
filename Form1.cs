@@ -64,6 +64,13 @@ namespace Acq
             if (package[0] != 0x00)
                 return false;
 
+            var t = package[1];
+            t += package[2];
+            t += package[3];
+            t += package[4];
+            if (t != package[5])
+                return true;
+
             var data = (package[1] << 24) | (package[2] << 16) | (package[3] << 8) | (package[4]);
             m_StreamWriter.WriteLine(data);
 
