@@ -6,14 +6,24 @@
 
 // Parameters
 // Max Uac for shortcut
+// Unit: Volt
 #define SAFE_VOLT _IQ20(4)
 // Reasonable impedance region
+// Unit: Ohm
 #define MIN_R _IQ20(0.5)
 #define MAX_R _IQ20(300.0)
 #define MIN_X _IQ20(2.0)
 #define MAX_X _IQ20(5.0)
 // Min Udc/Uac for current loop mode
+// Unit: 1
 #define MIN_UDC_UAC _IQ20(1.5)
+// Reasonable Udc target region
+// Unit: 1
+#define MAX_TARG_UDC_UAC _IQ20(2.8)
+#define MIN_TARG_UDC_UAC _IQ20(1.0)
+// Max target Iac
+// Unit: Ampere
+#define MAX_TARG_IAC _IQ20(5.0)
 
 // State
 State_t g_State = S_IDLE;
@@ -54,97 +64,14 @@ static PIc_t m_PI2 = {
 };
 
 // Voltage Loop Controller
+#define VOLT_SCALE _IQ20(1e-4)
 static PI_t m_PI3 = {
-    _IQ20(+100),  // PosSat
-    _IQ20(-100),  // NegSat
-    _IQ20(1e-5),  // Kp
-    _IQ20(10e-6), // Ki
+    _IQ20(+1000), // PosSat
+    _IQ20(-1000), // NegSat
+    _IQ20(100),   // Kp
+    _IQ20(60e-3), // Ki
     0,            // Enabled
     0,            // Node0
-};
-
-// DCvoltage IIR Filter
-static IIR_t m_IIR[5] = {
-    {
-        // Numer
-        {
-            _IQ30(-1.9959545554580642),
-            _IQ30(1)
-        },
-        // Denom
-        {
-            _IQ30(-1.9988294637104755),
-            _IQ30( 0.99884318920216619)
-        },
-        // Gain
-        _IQ30(0.003392826560444677),
-        0, // Node1
-        0  // Node2
-    },
-    {
-        // Numer
-        {
-            _IQ30(-1.995030143398858),
-            _IQ30(1)
-        },
-        // Denom
-        {
-            _IQ30(-1.9966306594202408),
-            _IQ30( 0.9966443784761313)
-        },
-        // Gain
-        _IQ30(0.0027604530656781781),
-        0, // Node1
-        0  // Node2
-    },
-    {
-        // Numer
-        {
-            _IQ30(-1.992114693638525),
-            _IQ30(1)
-        },
-        // Denom
-        {
-            _IQ30(-1.9947593314507899),
-            _IQ30( 0.99477305167546459)
-        },
-        // Gain
-        _IQ30(0.0017399735718241316),
-        0, // Node1
-        0  // Node2
-    },
-    {
-        // Numer
-        {
-            _IQ30(-1.9809244979649847),
-            _IQ30(1)
-        },
-        // Denom
-        {
-            _IQ30(-1.993397689134718),
-            _IQ30( 0.99341141403984989)
-        },
-        // Gain
-        _IQ30(0.00071950426817661648),
-        0, // Node1
-        0  // Node2
-    },
-    {
-        // Numer
-        {
-            _IQ30(-1.8448334120218466),
-            _IQ30(1)
-        },
-        // Denom
-        {
-            _IQ30(-1.9926807688086423),
-            _IQ30( 0.99269449746983485)
-        },
-        // Gain
-        _IQ30(0.00008847691614119181),
-        0, // Node1
-        0  // Node2
-    }
 };
 
 // Public Functions
@@ -256,7 +183,7 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     g_ACvoltage = Sin_Run(&m_ACvoltage, uAC);
     g_ACvoltageRms = Pha_Rms(g_ACvoltage);
     g_ACcurrent = Sin_Run(&m_ACcurrent, iAC);
-    g_DCvoltage = IIR_RunN(m_IIR, 5, uDC);
+    g_DCvoltage = uDC;
 
     if (g_State == S_IDLE)
         return;
@@ -324,13 +251,28 @@ _iq20 CurrentController()
 
 void VoltageController()
 {
-    _iq20 err;
+    _iq20 targ, maxTarg, minTarg, err;
+
+    // Bound
+    targ = g_TargetDCvoltage;
+    maxTarg = _IQ20rmpy(g_ACvoltageRms, MAX_TARG_UDC_UAC);
+    minTarg = _IQ20rmpy(g_ACvoltageRms, MIN_TARG_UDC_UAC);
+    if (targ > maxTarg)
+        targ = maxTarg;
+    else if (targ < minTarg)
+        targ = minTarg;
 
     // Error
-    err = g_TargetDCvoltage - g_DCvoltage;
+    err = targ - g_DCvoltage;
 
-    // PI
-    g_TargetACcurrent.Re = PI_Run(&m_PI3, err);
+    // Scaled PI
+    g_TargetACcurrent.Re = PI_Run(&m_PI3, _IQ20rmpy(err, VOLT_SCALE));
+
+    // Saturation
+    if (g_TargetACcurrent.Re > MAX_TARG_IAC)
+        g_TargetACcurrent.Re = MAX_TARG_IAC;
+    else if (g_TargetACcurrent.Re < -MAX_TARG_IAC)
+        g_TargetACcurrent.Re = -MAX_TARG_IAC;
 
     // SinPhi
     g_TargetACcurrent.Im = _IQ20div(g_TargetACcurrent.Re, g_TargetSinPhi);
