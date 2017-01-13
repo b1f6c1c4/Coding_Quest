@@ -406,7 +406,7 @@ static SinEst_Im[SINEST_N] = {
     _IQ30(0.007071067811865)
 };
 
-Phasor_t RunSinEst(SinEst *est, _iq20 data)
+Phasor_t Sin_Run(SinEst_t *est, _iq20 data)
 {
     int i;
     Phasor_t p;

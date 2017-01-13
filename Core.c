@@ -11,8 +11,13 @@
 
 _iq20 g_ACvoltageRms = 0;
 Phasor_t g_ACvoltage = {0, 0};
+static SinEst_t m_ACvoltage;
+
 Phasor_t g_ACcurrent = {0, 0};
+static SinEst_t m_ACcurrent;
+
 Phasor_t g_Impedance = {0, 0};
+
 _iq20 g_DCvoltage = 0;
 
 State_t g_State = S_IDLE;
@@ -72,4 +77,12 @@ int ChangeState(State_t st)
         default:
             return -1;
     }
+}
+
+void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
+{
+    g_ACvoltage = Sin_Run(&m_ACvoltage, uAC);
+    g_ACvoltageRms = Pha_Rms(g_ACvoltage);
+    g_ACcurrent = Sin_Run(&m_ACcurrent, iAC);
+    g_DCvoltage = uDC; // TODO: Add filters
 }

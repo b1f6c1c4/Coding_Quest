@@ -1,7 +1,13 @@
+#include "Interface.h"
 #include "Core.h"
 
 #include "DSP281x_Device.h"
 #include "DSP281x_Examples.h"
+
+// TODO
+#define UAC_COEF _IQ20(0.0)
+#define IAC_COEF _IQ20(0.0)
+#define UDC_COEF _IQ20(0.0)
 
 void IF_SetPwm(_iq20 level)
 {
@@ -23,4 +29,12 @@ void IF_Off()
     GpioMuxRegs.GPADIR.all    = 0x006F;
     GpioDataRegs.GPACLEAR.all = 0x004F;
     EDIS;
+}
+
+void RawProcess(unsigned long uAC, unsigned long iAC, unsigned long uDC)
+{
+    Process(
+        _IQ20rmpy(uAC, UAC_COEF),
+        _IQ20rmpy(iAC, IAC_COEF),
+        _IQ20rmpy(uDC, UDC_COEF));
 }

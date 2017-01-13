@@ -8,8 +8,8 @@
 typedef struct
 {
     _iq20 Node[SINEST_N];
-} SinEst;
+} SinEst_t;
 
-Phasor_t RunSinEst(SinEst *est, _iq20 data);
+Phasor_t Sin_Run(SinEst_t *est, _iq20 data);
 
 #endif

@@ -2,6 +2,7 @@
 #define CORE_H_
 
 #include "Phasor.h"
+#include "SinEst.h"
 
 typedef enum
 {
@@ -21,6 +22,6 @@ extern State_t g_State;
 // Return: 0 is OK
 int ChangeState(State_t st);
 
-void Process(unsigned long uAC, unsigned long iAC, unsigned long uDC);
+void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC);
 
 #endif
