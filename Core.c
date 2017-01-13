@@ -20,7 +20,7 @@ State_t g_State = S_IDLE;
 
 // Target
 _iq20 g_TargetDCvoltage = 0;
-_iq20 g_TargetCosPhi = _IQ20(1);
+_iq20 g_TargetSinPhi = 0;
 Phasor_t g_TargetACcurrent = {0, 0};
 
 // Measurement
@@ -332,8 +332,6 @@ void VoltageController()
     // PI
     g_TargetACcurrent.Re = PI_Run(&m_PI3, err);
 
-    // CosPhi
-    g_TargetACcurrent.Im = _IQ20div(g_TargetACcurrent.Re, g_TargetCosPhi);
-    if (g_TargetLeadOrLag == TARG_LAG)
-        g_TargetACcurrent.Im = -g_TargetACcurrent.Im;
+    // SinPhi
+    g_TargetACcurrent.Im = _IQ20div(g_TargetACcurrent.Re, g_TargetSinPhi);
 }
