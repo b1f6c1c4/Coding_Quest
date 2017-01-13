@@ -10,6 +10,14 @@ _iq20 Pha_Phase(Phasor_t p)
     return _IQ20atan2PU(p.Re, p.Im);
 }
 
+Phasor_t Pha_Norm(Phasor_t p)
+{
+    _iq20 mag = Pha_Rms(p);
+    p.Re = _IQ20div(p.Re, mag);
+    p.Im = _IQ20div(p.Im, mag);
+    return p;
+}
+
 Phasor_t Pha_Add(Phasor_t p1, Phasor_t p2)
 {
     Phasor_t p;
@@ -30,7 +38,7 @@ Phasor_t Pha_Mul(Phasor_t p1, Phasor_t p2)
 {
     Phasor_t p;
     p.Re = _IQ20rmpy(p1.Re, p2.Re) - _IQ20rmpy(p1.Im, p2.Im);
-    p.Im = _IQ20rmpy(p1.Re, p2.Im) + _IQ20rmpy(p1.Im, p2.Re);
+    p.Im = _IQ20rmpy(p1.Im, p2.Re) + _IQ20rmpy(p1.Re, p2.Im);
     return p;
 }
 
@@ -50,14 +58,16 @@ Phasor_t Pha_Div(Phasor_t p1, Phasor_t p2)
 
 Phasor_t Pha_Rel(Phasor_t p1, Phasor_t pBase)
 {
-    _iq20 mag;
     Phasor_t p;
-
-    mag = Pha_Rms(pBase);
-    pBase.Re = _IQ20div(pBase.Re, mag);
-    pBase.Im = _IQ20div(pBase.Im, mag);
-
     p.Re = _IQ20rmpy(p1.Re, pBase.Re) + _IQ20rmpy(p1.Im, pBase.Im);
     p.Im = _IQ20rmpy(p1.Im, pBase.Re) - _IQ20rmpy(p1.Re, pBase.Im);
+    return p;
+}
+
+Phasor_t Pha_IRel(Phasor_t p1, Phasor_t pBase)
+{
+    Phasor_t p;
+    p.Re = _IQ20rmpy(p1.Re, pBase.Re) - _IQ20rmpy(p1.Im, pBase.Im);
+    p.Im = _IQ20rmpy(p1.Im, pBase.Re) + _IQ20rmpy(p1.Re, pBase.Im);
     return p;
 }
