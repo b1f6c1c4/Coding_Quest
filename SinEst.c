@@ -1,6 +1,7 @@
+#include "IQmathLib.h"
 #include "SinEst.h"
 
-static _iq31 SinEst_Re[SINEST_N] = {
+static _iq30 SinEst_Re[SINEST_N] = {
     _IQ30(-0.000222107607464),
     _IQ30(-0.000443996021534),
     _IQ30(-0.000665446265135),
@@ -203,7 +204,7 @@ static _iq31 SinEst_Re[SINEST_N] = {
     _IQ30(0.000000000000000)
 };
 
-static SinEst_Im[SINEST_N] = {
+static _iq30 SinEst_Im[SINEST_N] = {
     _IQ30(0.007067578666751),
     _IQ30(0.007057114674771),
     _IQ30(0.007039686162622),

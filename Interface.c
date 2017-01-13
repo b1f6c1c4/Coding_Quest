@@ -15,8 +15,8 @@
 void IF_SetPwm(_iq20 level)
 {
     unsigned long cmpr = _IQ15mpyIQX((level+_IQ20(1.0)), 20, _IQ18(3750), 18) >> 15;
-    EvaRegs.CMPR1 = cmpr + cmproffset;
-    EvaRegs.CMPR2 = cmpr + cmproffset;
+    EvaRegs.CMPR1 = cmpr;
+    EvaRegs.CMPR2 = cmpr;
 
     EALLOW;
     GpioMuxRegs.GPAMUX.all  = 0x031F;

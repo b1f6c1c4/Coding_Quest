@@ -1,6 +1,6 @@
 #include "DSP281x_Device.h"     // DSP281x Headerfile Include File
 #include "DSP281x_Examples.h"   // DSP281x Examples Include File
-#include "CtrlUnit.h"
+#include "Core.h"
 
 //---------------------------------------------------------------------------
 // InitEv:
@@ -47,11 +47,11 @@ void InitEv(void)
     EvaRegs.T1CMPR = 3749; // D is 50%
     EvaRegs.T1CNT  = 0x3749;
 
-    EvaRegs.EVAIMRC.bit.CAP1INT = 1; // Enable CAP1 interrupt
-    EvaRegs.EVAIMRC.bit.CAP2INT = 1; // Enable CAP2 interrupt
+    EvaRegs.EVAIMRC.bit.CAP1INT = 0; // Enable CAP1 interrupt
+    EvaRegs.EVAIMRC.bit.CAP2INT = 0; // Enable CAP2 interrupt
 
     EvaRegs.CAPCONA.bit.CAPRES    = 1; // Capture Reset
-    EvaRegs.CAPCONA.bit.CAP12EN   = 1; // Enable captures 1 and 2
+    EvaRegs.CAPCONA.bit.CAP12EN   = 0; // Enable captures 1 and 2
     EvaRegs.CAPCONA.bit.CAP3EN    = 0; // Disable captures 3
     EvaRegs.CAPCONA.bit.CAP12TSEL = 1; // Selects GP timer 1 for captures 1 and 2
     EvaRegs.CAPCONA.bit.CAP1EDGE  = 1; // Captures 1 detects rising edge
@@ -61,34 +61,4 @@ void InitEv(void)
     // Subsequently, every time the FIFO gets a new value, a capture interrupt will be generated.
     EvaRegs.CAPFIFOA.bit.CAP1FIFO = 1;
     EvaRegs.CAPFIFOA.bit.CAP1FIFO = 1;
-
-}
-static Uint64 local_count1 = 0;
-static Uint64 local_count2 = 0;
-interrupt void CAPINT1_ISR(void)    // EV-A
-{
-    EvaRegs.EVAIFRC.bit.CAP1INT=1;
-    PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
-    if ((g_SysCount - local_count1 > 160)&&(g_SysCount - local_count2 > 80))
-    {
-        local_count1 = g_SysCount;
-        SetPhasePI();
-        EALLOW;
-        GpioDataRegs.GPASET.bit.GPIOA5=1;
-        EDIS;
-    }
-}
-interrupt void CAPINT2_ISR(void)    // EV-B
-{
-//    EvaRegs.EVAIFRC.bit.CAP2INT=1;
-//    PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
-//    if ((g_SysCount - local_count2 > 160)&&(g_SysCount - local_count1 > 80))
-//    {
-//        local_count2 = g_SysCount;
-//        // After the falling edge, the circuit malfunctions. I donno why.
-//        SetPhaseZero();
-//        EALLOW;
-//        GpioDataRegs.GPACLEAR.bit.GPIOA5=1;
-//        EDIS;
-//    }
 }

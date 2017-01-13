@@ -1,5 +1,6 @@
 #ifndef INTERFACE_H_
 #define INTERFACE_H_
+#include "IQmathLib.h"
 
 // level == +1 means 100%
 // level ==  0 means  50%

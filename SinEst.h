@@ -1,6 +1,6 @@
 #ifndef SINEST_H_
 #define SINEST_H_
-
+#include "Phasor.h"
 #include "IQmathLib.h"
 
 #define SINEST_N 200

@@ -13,16 +13,16 @@ _iq20 Pha_Phase(Phasor_t p)
 Phasor_t Pha_SMul(Phasor_t p1, _iq20 val)
 {
     Phasor_t p;
-    p.Re = _IQ20rmpy(p.Re, val);
-    p.Im = _IQ20rmpy(p.Im, val);
+    p.Re = _IQ20rmpy(p1.Re, val);
+    p.Im = _IQ20rmpy(p1.Im, val);
     return p;
 }
 
 Phasor_t Pha_SDiv(Phasor_t p1, _iq20 val)
 {
     Phasor_t p;
-    p.Re = _IQ20div(p.Re, val);
-    p.Im = _IQ20div(p.Im, val);
+    p.Re = _IQ20div(p1.Re, val);
+    p.Im = _IQ20div(p1.Im, val);
     return p;
 }
 
