@@ -6,14 +6,10 @@
 
 typedef struct
 {
-    _iq20 Rms;
-    _iq20 Phase;
+    Phasor_t Phasor;
     _iq20 Node[SINEST_N];
 } SinEst;
 
-extern SinEst g_ACvoltage;
-extern SinEst g_ACcurrent;
-
 void RunSinEst(SinEst *est, _iq20 data);
 
-#endif /* SINEST_H_ */
+#endif

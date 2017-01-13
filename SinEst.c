@@ -406,9 +406,6 @@ static SinEst_Im[SINEST_N] = {
     _IQ30(0.007071067811865)
 };
 
-SinEst g_ACvoltage = {0};
-SinEst g_ACcurrent = {0};
-
 void RunSinEst(SinEst *est, _iq20 data)
 {
     int i;
@@ -424,6 +421,6 @@ void RunSinEst(SinEst *est, _iq20 data)
     re += _IQ20mpyIQX(SinEst_Re[i], 30, est->Node[i], 20);
     im += _IQ20mpyIQX(SinEst_Im[i], 30, est->Node[i], 20);
 
-    est->Rms = _IQ20mag(re, im);
-    est->Phase = _IQ20atan2PU(re, im);
+    est->Phasor.Re = re;
+    est->Phasor.Im = im;
 }
