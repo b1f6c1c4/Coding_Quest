@@ -30,7 +30,7 @@ State_t g_State = S_IDLE;
 
 // Target
 _iq20 g_TargetDCvoltage = 0;
-_iq20 g_TargetSinPhi = 0;
+_iq20 g_TargetTanPhi = 0;
 Phasor_t g_TargetACcurrent = {0, 0};
 
 // Measurement
@@ -308,6 +308,6 @@ void VoltageController()
     else if (g_TargetACcurrent.Re < -MAX_TARG_IAC)
         g_TargetACcurrent.Re = -MAX_TARG_IAC;
 
-    // SinPhi
-    g_TargetACcurrent.Im = _IQ20div(g_TargetACcurrent.Re, g_TargetSinPhi);
+    // TanPhi
+    g_TargetACcurrent.Im = _IQ20div(g_TargetACcurrent.Re, g_TargetTanPhi);
 }

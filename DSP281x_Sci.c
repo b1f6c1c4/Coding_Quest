@@ -94,17 +94,17 @@ interrupt void SCIRXINTA_ISR(void)    // SCI-A
             g_TargetDCvoltage += _IQ20(5);
             break;
         case 'q':
-            g_TargetSinPhi -= _IQ20(0.01);
-            if (g_TargetSinPhi < TARG_MIN_SINPHI)
-                g_TargetSinPhi = TARG_MIN_SINPHI;
+            g_TargetTanPhi -= _IQ20(0.01);
+            if (g_TargetTanPhi < TARG_MIN_TANPHI)
+                g_TargetTanPhi = TARG_MIN_TANPHI;
             break;
         case 'w':
-            g_TargetSinPhi = 0;
+            g_TargetTanPhi = 0;
             break;
         case 'e':
-            g_TargetSinPhi += _IQ20(0.01);
-            if (g_TargetSinPhi > TARG_MAX_SINPHI)
-                g_TargetSinPhi = TARG_MAX_SINPHI;
+            g_TargetTanPhi += _IQ20(0.01);
+            if (g_TargetTanPhi > TARG_MAX_TANPHI)
+                g_TargetTanPhi = TARG_MAX_TANPHI;
             break;
     }
 }

@@ -17,9 +17,9 @@ extern State_t g_State;
 
 // Target
 extern _iq20 g_TargetDCvoltage;
-#define TARG_MIN_SINPHI _IQ20(-0.526782687642637)
-#define TARG_MAX_SINPHI _IQ20(+0.526782687642637)
-extern _iq20 g_TargetSinPhi;
+#define TARG_MIN_TANPHI _IQ20(-0.619744338403102)
+#define TARG_MAX_TANPHI _IQ20(+0.619744338403102)
+extern _iq20 g_TargetTanPhi;
 extern Phasor_t g_TargetACcurrent; // DON'T MODIFY THIS IN CURR MODE
 
 // Measurement
