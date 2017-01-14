@@ -16,7 +16,7 @@
 #define MAX_X _IQ20(-3)
 // Min Udc/Uac for current loop mode
 // Unit: 1
-#define MIN_UDC_UAC _IQ20(1.5)
+#define MIN_UDC_UAC _IQ20(0.0)
 // Reasonable Udc target region
 // Unit: 1
 #define MAX_TARG_UDC_UAC _IQ20(2.8)
@@ -45,6 +45,38 @@ static SinEst_t m_ACcurrent;
 Phasor_t g_Impedance = {0, 0};
 
 _iq20 g_DCvoltage = 0;
+
+// Impedance
+static IIR_t m_ImpRe = {
+    // Numer
+    {
+        _IQ30(2),
+        _IQ30(1)
+    },
+    // Denom
+    {
+        _IQ30(-1.954742813986272),
+        _IQ30(0.956206172008050)
+    },
+    _IQ30(0.000345374764090), // Gain
+    0, // Node1
+    0  // Node2
+};
+static IIR_t m_ImpIm = {
+    // Numer
+    {
+        _IQ30(2),
+        _IQ30(1)
+    },
+    // Denom
+    {
+        _IQ30(-1.954742813986272),
+        _IQ30(0.956206172008050)
+    },
+    _IQ30(0.000345374764090), // Gain
+    0, // Node1
+    0  // Node2
+};
 
 // Current Loop Controller
 #define MAX_PWM_RATIO _IQ20(0.96875)
@@ -214,6 +246,8 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     if (g_State == S_IMP)
     {
         g_Impedance = Pha_Div(g_ACvoltage, g_ACcurrent);
+        g_Impedance.Re = IIR_RunN(&m_ImpRe, g_Impedance.Re);
+        g_Impedance.Im = IIR_RunN(&m_ImpIm, g_Impedance.Im);
         return;
     }
 
