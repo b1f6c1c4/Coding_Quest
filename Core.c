@@ -50,7 +50,7 @@ _iq20 g_DCvoltage = 0;
 static IIR_t m_ImpRe = {
     // Numer
     {
-        _IQ30(2),
+        0x7FFFFFFF,
         _IQ30(1)
     },
     // Denom
@@ -65,7 +65,7 @@ static IIR_t m_ImpRe = {
 static IIR_t m_ImpIm = {
     // Numer
     {
-        _IQ30(2),
+        0x7FFFFFFF,
         _IQ30(1)
     },
     // Denom
@@ -101,7 +101,7 @@ static PIc_t m_PI2 = {
 static IIR_t m_IIR = {
     // Numer
     {
-        _IQ30(2),
+        0x7FFFFFFF,
         _IQ30(1)
     },
     // Denom
@@ -240,14 +240,16 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     g_ACcurrentRms = Pha_Rms(g_ACcurrent);
     g_DCvoltage = uDC;
 
+    g_DCvoltage = _IQ20(7.5); // TODO
+
     if (g_State == S_IDLE)
         return;
 
     if (g_State == S_IMP)
     {
         g_Impedance = Pha_Div(g_ACvoltage, g_ACcurrent);
-        g_Impedance.Re = IIR_RunN(&m_ImpRe, g_Impedance.Re);
-        g_Impedance.Im = IIR_RunN(&m_ImpIm, g_Impedance.Im);
+        g_Impedance.Re = IIR_Run(&m_ImpRe, g_Impedance.Re);
+        g_Impedance.Im = IIR_Run(&m_ImpIm, g_Impedance.Im);
         return;
     }
 
