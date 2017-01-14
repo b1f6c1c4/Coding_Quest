@@ -25,6 +25,11 @@
 // Unit: Ampere
 #define MAX_TARG_IAC _IQ20(5.0)
 
+// Debug code
+extern unsigned long DataToSend = 0;
+static unsigned long long m_SysCount = 0;
+void UartSend(unsigned long);
+
 // State
 State_t g_State = S_IDLE;
 
@@ -288,6 +293,10 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     g_DCvoltage = uDC;
 
     g_DCvoltage = _IQ20(7.5); // TODO
+
+    if ((m_SysCount & 0x7F) == 0) // TODO
+        UartSend(m_DCvoltage);
+    m_SysCount++;
 
     if (g_State == S_IDLE)
         return;

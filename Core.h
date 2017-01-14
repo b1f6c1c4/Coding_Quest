@@ -29,6 +29,7 @@ extern _iq20 g_ACcurrentRms;
 extern Phasor_t g_ACcurrent;
 extern Phasor_t g_Impedance;
 extern _iq20 g_DCvoltage;
+extern unsigned long DataToSend;
 
 // Return
 // 0 : OK
