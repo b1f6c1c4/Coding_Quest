@@ -227,9 +227,31 @@ interrupt void T2OFINT_ISR(void)    // EV-A
     for(;;);
 }
 // INT3.5
-// Moved to DSP281x_Ev.c
+interrupt void CAPINT1_ISR(void)    // EV-A
+{
+  // Insert ISR Code here
+
+  // To receive more interrupts from this PIE group, acknowledge this interrupt
+  // PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
+
+  // Next two lines for debug only to halt the processor here
+  // Remove after inserting ISR Code
+   asm ("      ESTOP0");
+   for(;;);
+}
 // INT3.6
-// Moved to DSP281x_Ev.c
+interrupt void CAPINT2_ISR(void)    // EV-A
+{
+  // Insert ISR Code here
+
+  // To receive more interrupts from this PIE group, acknowledge this interrupt
+  // PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
+
+  // Next two lines for debug only to halt the processor here
+  // Remove after inserting ISR Code
+   asm ("      ESTOP0");
+   for(;;);
+}
 // INT3.7
 interrupt void CAPINT3_ISR(void)    // EV-A
 {

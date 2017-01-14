@@ -23,7 +23,7 @@ extern _iq20 g_TargetSinPhi;
 extern Phasor_t g_TargetACcurrent; // DON'T MODIFY THIS IN CURR MODE
 
 // Measurement
-_iq20 g_ACvoltageRms;
+extern _iq20 g_ACvoltageRms;
 extern Phasor_t g_ACvoltage;
 extern Phasor_t g_ACcurrent;
 extern Phasor_t g_Impedance;

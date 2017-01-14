@@ -239,7 +239,7 @@ _iq20 CurrentController()
     temp3 = Pha_IRel(temp2, ref);
 
     // Target Voltage Phasor
-    comp = Pha_Mul(temp2, g_Impedance);
+    comp = Pha_Mul(temp3, g_Impedance);
     targ = Pha_Sub(g_ACvoltage, comp);
 
     // Target Voltage

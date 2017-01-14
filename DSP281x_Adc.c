@@ -76,9 +76,9 @@ void InitAdc(void)
 
 interrupt void  ADCINT_ISR(void)    // ADC
 {
-    int16 ACcurrent = 0;
-    int16 DCvoltage = 0;
-    int16 ACvoltage = 0;
+    long ACcurrent = 0;
+    long DCvoltage = 0;
+    long ACvoltage = 0;
 
     AdcRegs.ADCST.bit.INT_SEQ1_CLR = 1;
     AdcRegs.ADCST.bit.INT_SEQ2_CLR = 1;
@@ -102,7 +102,7 @@ interrupt void  ADCINT_ISR(void)    // ADC
     DCvoltage += AdcRegs.ADCRESULT14 >> 4;
     DCvoltage += AdcRegs.ADCRESULT15 >> 4;
 
-    RawProcess(ACvoltage >> 2, ACcurrent >> 3, DCvoltage >> 2);
+    RawProcess(ACvoltage << 2, ACcurrent << 1, DCvoltage << 2);
 
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
 }
