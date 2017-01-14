@@ -410,7 +410,7 @@ static _iq30 SinEst_Im[SINEST_N] = {
 Phasor_t Sin_Run(SinEst_t *est, _iq20 data)
 {
     int i;
-    Phasor_t p;
+    Phasor_t p = {0, 0};
 
     for (i = 0; i < SINEST_N - 1; i++)
     {

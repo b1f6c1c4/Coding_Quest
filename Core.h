@@ -25,6 +25,7 @@ extern Phasor_t g_TargetACcurrent; // DON'T MODIFY THIS IN CURR MODE
 // Measurement
 extern _iq20 g_ACvoltageRms;
 extern Phasor_t g_ACvoltage;
+extern _iq20 g_ACcurrentRms;
 extern Phasor_t g_ACcurrent;
 extern Phasor_t g_Impedance;
 extern _iq20 g_DCvoltage;

@@ -5,9 +5,9 @@
 #include "DSP281x_Examples.h"
 
 // TODO
-#define UAC_COEF _IQ20(300.0)
+#define UAC_COEF _IQ20(310.655)
 #define UAC_OFFSET 36055
-#define IAC_COEF _IQ20(1.0)
+#define IAC_COEF _IQ20(7.33496)
 #define IAC_OFFSET 34937
 #define UDC_COEF _IQ20(1.0)
 #define UDC_OFFSET 0

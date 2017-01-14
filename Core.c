@@ -38,6 +38,7 @@ _iq20 g_ACvoltageRms = 0;
 Phasor_t g_ACvoltage = {0, 0};
 static SinEst_t m_ACvoltage;
 
+_iq20 g_ACcurrentRms = 0;
 Phasor_t g_ACcurrent = {0, 0};
 static SinEst_t m_ACcurrent;
 
@@ -183,6 +184,7 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     g_ACvoltage = Sin_Run(&m_ACvoltage, uAC);
     g_ACvoltageRms = Pha_Rms(g_ACvoltage);
     g_ACcurrent = Sin_Run(&m_ACcurrent, iAC);
+    g_ACcurrentRms = Pha_Rms(g_ACcurrent);
     g_DCvoltage = uDC;
 
     if (g_State == S_IDLE)
