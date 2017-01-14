@@ -18,7 +18,7 @@ _iq20 IIR_Run(IIR_t *iir, _iq20 val)
 
 _iq20 IIR_RunN(IIR_t *iir, int n, _iq20 val)
 {
-    while (n > 0)
-        val = IIR_Run(iir++, n--);
+    while (n-- > 0)
+        val = IIR_Run(iir++, val);
     return val;
 }

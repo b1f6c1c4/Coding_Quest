@@ -358,7 +358,7 @@ _iq20 CurrentController()
     targV = _IQ20rmpy(_IQ20(1.414213562373095), targ.Im);
 
     // Ratio
-    m_DCvoltage = IIR_RunN(&m_IIR, 4, g_DCvoltage);
+    m_DCvoltage = IIR_RunN(m_IIR, 4, g_DCvoltage);
     dcV = m_DCvoltage;
     if (dcV < MIN_DC_VOLT)
         dcV = MIN_DC_VOLT;
