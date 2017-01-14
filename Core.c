@@ -98,20 +98,67 @@ static PIc_t m_PI2 = {
     0,            // Enabled
     {0, 0},       // Node0
 };
-static IIR_t m_IIR = {
-    // Numer
+static IIR_t m_IIR[4] = {
     {
-        0x7FFFFFFF,
-        _IQ30(1)
+        // Numer
+        {
+            _IQ30(-1.995848074765828),
+            _IQ30(1)
+        },
+        // Denom
+        {
+            _IQ30(-1.985973349545367),
+            _IQ30(0.987146524321990)
+        },
+        _IQ30(0.282561633568666), // Gain
+        0, // Node1
+        0  // Node2
     },
-    // Denom
     {
-        _IQ30(-1.954742813986272),
-        _IQ30(0.956206172008050)
+        // Numer
+        {
+            _IQ30(-1.993547646882071),
+            _IQ30(1)
+        },
+        // Denom
+        {
+            _IQ30(-1.959171966452290),
+            _IQ30(0.960459980316709)
+        },
+        _IQ30(0.199619246014360), // Gain
+        0, // Node1
+        0  // Node2
     },
-    _IQ30(0.000345374764090), // Gain
-    0, // Node1
-    0  // Node2
+    {
+        // Numer
+        {
+            _IQ30(-1.979125004049090),
+            _IQ30(1)
+        },
+        // Denom
+        {
+            _IQ30(-1.932912727951779),
+            _IQ30(0.934391706810656)
+        },
+        _IQ30(0.070849300395329), // Gain
+        0, // Node1
+        0  // Node2
+    },
+    {
+        // Numer
+        {
+            _IQ30(1),
+            _IQ30(0)
+        },
+        // Denom
+        {
+            _IQ30(-0.960188292734688),
+            _IQ30(0)
+        },
+        _IQ30(0.019905853632656), // Gain
+        0, // Node1
+        0  // Node2
+    },
 };
 
 // Voltage Loop Controller
@@ -311,7 +358,7 @@ _iq20 CurrentController()
     targV = _IQ20rmpy(_IQ20(1.414213562373095), targ.Im);
 
     // Ratio
-    m_DCvoltage = IIR_Run(&m_IIR, g_DCvoltage);
+    m_DCvoltage = IIR_RunN(&m_IIR, 4, g_DCvoltage);
     dcV = m_DCvoltage;
     if (dcV < MIN_DC_VOLT)
         dcV = MIN_DC_VOLT;
