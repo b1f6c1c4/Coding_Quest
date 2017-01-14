@@ -48,6 +48,7 @@ _iq20 g_DCvoltage = 0;
 
 // Current Loop Controller
 #define MAX_PWM_RATIO _IQ20(0.96875)
+#define MIN_DC_VOLT _IQ20(5)
 static PIc_t m_PI = {
     _IQ20(+1000), // PosSat
     _IQ20(-1000), // NegSat
@@ -234,6 +235,7 @@ _iq20 CurrentController()
     Phasor_t temp1, temp2, temp3;
     Phasor_t comp, targ;
     _iq20 targV;
+    _iq20 dcV;
 
     // Phase Reference
     ref = Pha_Norm(g_ACvoltage);
@@ -257,7 +259,11 @@ _iq20 CurrentController()
     targV = _IQ20rmpy(_IQ20(1.414213562373095), targ.Im);
 
     // Ratio
-    return _IQ20div(targV, g_DCvoltage);
+    dcV = g_DCvoltage;
+    if (dcV < MIN_DC_VOLT)
+        dcV = MIN_DC_VOLT;
+
+    return _IQ20div(targV, dcV);
 }
 
 void VoltageController()
