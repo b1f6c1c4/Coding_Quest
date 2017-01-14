@@ -49,6 +49,7 @@ _iq20 g_DCvoltage = 0;
 // Current Loop Controller
 #define MAX_PWM_RATIO _IQ20(0.96875)
 #define MIN_DC_VOLT _IQ20(5)
+static _iq20 m_DCvoltage = 0;
 static PIc_t m_PI = {
     _IQ20(+1000), // PosSat
     _IQ20(-1000), // NegSat
@@ -64,6 +65,21 @@ static PIc_t m_PI2 = {
     _IQ20(10e-3), // Ki
     0,            // Enabled
     {0, 0},       // Node0
+};
+static IIR_t m_IIR = {
+    // Numer
+    {
+        _IQ30(2),
+        _IQ30(1)
+    },
+    // Denom
+    {
+        _IQ30(-1.954742813986272),
+        _IQ30(0.956206172008050)
+    },
+    _IQ30(0.000345374764090), // Gain
+    0, // Node1
+    0  // Node2
 };
 
 // Voltage Loop Controller
@@ -259,7 +275,8 @@ _iq20 CurrentController()
     targV = _IQ20rmpy(_IQ20(1.414213562373095), targ.Im);
 
     // Ratio
-    dcV = g_DCvoltage;
+    m_DCvoltage = IIR_Run(&m_IIR, g_DCvoltage);
+    dcV = m_DCvoltage;
     if (dcV < MIN_DC_VOLT)
         dcV = MIN_DC_VOLT;
 
