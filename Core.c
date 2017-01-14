@@ -47,6 +47,7 @@ Phasor_t g_Impedance = {0, 0};
 _iq20 g_DCvoltage = 0;
 
 // Current Loop Controller
+#define MAX_PWM_RATIO _IQ20(0.96875)
 static PIc_t m_PI = {
     _IQ20(+1000), // PosSat
     _IQ20(-1000), // NegSat
@@ -208,6 +209,10 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
 
     // g_TargetACcurrent will be used
     ratio = CurrentController();
+    if (ratio > MAX_PWM_RATIO)
+        ratio = MAX_PWM_RATIO;
+    else if (ratio < -MAX_PWM_RATIO)
+        ratio = -MAX_PWM_RATIO;
     IF_SetPwm(ratio);
 }
 
@@ -237,6 +242,7 @@ _iq20 CurrentController()
     curr = Pha_Rel(g_ACcurrent, ref);
 
     // PI
+    curr = Pha_Sub(curr, g_TargetACcurrent);
     temp1 = PIc_Run(&m_PI, curr);
     temp2 = PIc_Run(&m_PI2, temp1);
 
