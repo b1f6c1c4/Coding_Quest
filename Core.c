@@ -10,10 +10,10 @@
 #define SAFE_VOLT _IQ20(4)
 // Reasonable impedance region
 // Unit: Ohm
-#define MIN_R _IQ20(0.5)
+#define MIN_R _IQ20(1)
 #define MAX_R _IQ20(300.0)
-#define MIN_X _IQ20(2.0)
-#define MAX_X _IQ20(5.0)
+#define MIN_X _IQ20(-20)
+#define MAX_X _IQ20(-3)
 // Min Udc/Uac for current loop mode
 // Unit: 1
 #define MIN_UDC_UAC _IQ20(1.5)
@@ -127,6 +127,7 @@ int ChangeState(State_t st)
             {
                 case S_IDLE:
                     g_State = S_IDLE;
+                    IF_Off();
                     return 0;
                 case S_IMP:
                     return 0;
@@ -144,6 +145,7 @@ int ChangeState(State_t st)
                     g_State = S_IDLE;
                     PIc_Disable(&m_PI);
                     PIc_Disable(&m_PI2);
+                    IF_Off();
                     return 0;
                 case S_IMP:
                     return 1;
@@ -162,6 +164,7 @@ int ChangeState(State_t st)
                     PIc_Disable(&m_PI);
                     PIc_Disable(&m_PI2);
                     PI_Disable(&m_PI3);
+                    IF_Off();
                     return 0;
                 case S_IMP:
                     return 1;

@@ -10,10 +10,6 @@ void IF_SetPwm(_iq20 level);
 // shutdown all IGBTs
 void IF_Off();
 
-extern unsigned long g_shit;
-extern unsigned long g_fuck;
-extern unsigned long g_bitch;
-
 void RawProcess(long uAC, long iAC, long uDC);
 
 #endif

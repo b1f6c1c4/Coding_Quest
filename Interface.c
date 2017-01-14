@@ -4,17 +4,12 @@
 #include "DSP281x_Device.h"
 #include "DSP281x_Examples.h"
 
-// TODO
 #define UAC_COEF _IQ20(310.655)
 #define UAC_OFFSET 36055
 #define IAC_COEF _IQ20(7.33496)
 #define IAC_OFFSET 34937
-#define UDC_COEF _IQ20(1.0)
-#define UDC_OFFSET 0
-
-unsigned long g_shit;
-unsigned long g_fuck;
-unsigned long g_bitch;
+#define UDC_COEF _IQ20(410.779)
+#define UDC_OFFSET _IQ20(4.4475)
 
 void IF_SetPwm(_iq20 level)
 {
@@ -44,11 +39,8 @@ void RawProcess(long uAC, long iAC, long uDC)
     GpioDataRegs.GPATOGGLE.all = 1<<5;
     EDIS;
 
-    g_shit = uAC;
-    g_fuck = iAC;
-    g_bitch = uDC;
     Process(
         _IQ20mpyIQX(uAC - UAC_OFFSET, 16, UAC_COEF, 20),
         _IQ20mpyIQX(iAC - IAC_OFFSET, 16, IAC_COEF, 20),
-        _IQ20mpyIQX(uDC - UDC_OFFSET, 16, UDC_COEF, 20));
+        _IQ20mpyIQX(uDC, 16, UDC_COEF, 20) - UDC_OFFSET);
 }
