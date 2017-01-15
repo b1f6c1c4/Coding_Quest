@@ -9,16 +9,29 @@ namespace Acq
 
         private readonly List<double> m_List = new List<double>();
 
-        public double Val { get; private set; }
+        public double Mean { get; private set; }
+
+        public double Variance { get; private set; }
 
         public void Tick()
         {
             lock (m_Lock)
             {
-                if (m_List.Count > 0)
-                    Val = m_List.Average();
+                if (m_List.Count > 1)
+                {
+                    Mean = m_List.Average();
+                    Variance = m_List.Sum(d => (d - Mean) * (d - Mean)) / (m_List.Count - 1);
+                }
+                else if (m_List.Count > 0)
+                {
+                    Mean = m_List.Average();
+                    Variance = double.NaN;
+                }
                 else
-                    Val = double.NaN;
+                {
+                    Mean = double.NaN;
+                    Variance = double.NaN;
+                }
                 m_List.Clear();
             }
         }

@@ -14,8 +14,6 @@ namespace Acq
     {
         private readonly AsyncSerialPort m_Com;
 
-        private StreamWriter m_StreamWriter;
-
         private readonly Profile m_Profile;
 
         private int m_Count;
@@ -27,6 +25,10 @@ namespace Acq
         private readonly Filter m_UacFilter = new Filter();
         private readonly Filter m_IacFilter = new Filter();
         private readonly Filter m_UdcFilter = new Filter();
+
+        private readonly Filter m_RawUacFilter = new Filter();
+        private readonly Filter m_RawIacFilter = new Filter();
+        private readonly Filter m_RawUdcFilter = new Filter();
 
         public Form1()
         {
@@ -47,6 +49,9 @@ namespace Acq
                                 m_UacFilter.Tick();
                                 m_IacFilter.Tick();
                                 m_UdcFilter.Tick();
+                                m_RawUacFilter.Tick();
+                                m_RawIacFilter.Tick();
+                                m_RawUdcFilter.Tick();
                             };
 
             button2.Enabled = false;
@@ -59,7 +64,7 @@ namespace Acq
                                 Parity = Parity.None,
                                 StopBits = StopBits.One
                             };
-            m_Com = new AsyncSerialPort(m_Profile, 13 * 5 + 2);
+            m_Com = new AsyncSerialPort(m_Profile, 19 * 4 + 2);
 
             m_Com.PackageArrived += ComOnPackageArrived;
             m_Com.OpenPort += e => { SetButtonEnable(e != null); };
@@ -94,8 +99,6 @@ namespace Acq
             m_Profile.Name = listBox1.Text;
             m_Com.Open(m_Profile, new TimeSpan(0, 0, 30));
 
-            m_StreamWriter = new StreamWriter("data.txt");
-
             button1.Enabled = false;
             button2.Enabled = false;
         }
@@ -105,11 +108,7 @@ namespace Acq
             button1.Enabled = false;
             button2.Enabled = false;
 
-            m_StreamWriter.Close();
             m_Com.Close();
-
-            m_StreamWriter.Dispose();
-            m_StreamWriter = null;
         }
 
         private bool ComOnPackageArrived(IList<byte> package)
@@ -123,6 +122,13 @@ namespace Acq
             p.RemoveRange(0, 2);
             try
             {
+                var rUac = Take(p);
+                m_RawUacFilter.Data(rUac);
+                var rIac = Take(p);
+                m_RawIacFilter.Data(rIac);
+                var rUdc = Take(p);
+                m_RawUdcFilter.Data(rUdc);
+
                 var sys = TakeF(p);
                 var state = TakeF(p);
 
@@ -159,7 +165,7 @@ namespace Acq
                 var sb = new StringBuilder();
                 Interlocked.Increment(ref m_Count);
                 sb.AppendLine($"Update frequency: {m_Frequency,10}Hz");
-                sb.AppendLine($"Sys Clk: {sys,10:x8}");
+                sb.AppendLine($"Sys Clk: {sys,15:x8}");
                 switch (state)
                 {
                     case 0:
@@ -176,37 +182,44 @@ namespace Acq
                         break;
                 }
                 sb.AppendLine("Uac:");
-                sb.Append($"   {uACre,10:F6} + j{uACim,10:F6}V");
-                sb.AppendLine($"   RMS {uACrms,10:F6}V Phase {uACpha / Math.PI * 180,10:F6}");
+                sb.Append($"   {uACre,15:F6} + j{uACim,15:F6}V");
+                sb.AppendLine($"   RMS {uACrms,15:F6}V Phase {uACpha / Math.PI * 180,15:F6}");
                 sb.AppendLine("Iac:");
-                sb.Append($"   {iACre,10:F6} + j{iACim,10:F6}A");
-                sb.AppendLine($"   RMS {iACrms,10:F6}A Phase {iACpha / Math.PI * 180,10:F6}");
+                sb.Append($"   {iACre,15:F6} + j{iACim,15:F6}A");
+                sb.AppendLine($"   RMS {iACrms,15:F6}A Phase {iACpha / Math.PI * 180,15:F6}");
                 sb.AppendLine(
                               lead > 0
-                                  ? $"Iac-Uac: Lead {+lead / Math.PI * 180,10:F6}"
-                                  : $"Iac-Uac: Lag  {-lead / Math.PI * 180,10:F6}");
-                sb.AppendLine($"Udc: {uDC,10:F6}V (IIR:) {muDC,10:F6}V");
+                                  ? $"Iac-Uac: Lead {+lead / Math.PI * 180,15:F6}"
+                                  : $"Iac-Uac: Lag  {-lead / Math.PI * 180,15:F6}");
+                sb.AppendLine($"Udc: {uDC,15:F6}V (IIR:) {muDC,15:F6}V");
                 sb.AppendLine("Imp:");
-                sb.Append($"   {impR,10:F6} + j{impX,10:F6}Ohm");
-                sb.AppendLine($"   = {impZ,10:F6}Ohm");
+                sb.Append($"   {impR,15:F6} + j{impX,15:F6}Ohm");
+                sb.AppendLine($"   = {impZ,15:F6}Ohm");
                 sb.AppendLine("Target Iac:");
-                sb.Append($"   {itACre,10:F6} + j{itACim,10:F6}A");
-                sb.AppendLine($"   RMS {itACrms,10:F6}A Phase {itACpha / Math.PI * 180,10:F6}");
+                sb.Append($"   {itACre,15:F6} + j{itACim,15:F6}A");
+                sb.AppendLine($"   RMS {itACrms,15:F6}A Phase {itACpha / Math.PI * 180,15:F6}");
                 sb.Append(
                           tTanPhi > 0
-                              ? $"Target cos phi: (Lead) {tCosPhi,10:F6}"
-                              : $"Target cos phi: (Lag)  {tCosPhi,10:F6}");
-                sb.AppendLine($"    tan phi={tTanPhi,10:F6}");
-                sb.AppendLine($"Target Udc: {utDC,10:F6}");
+                              ? $"Target cos phi: (Lead) {tCosPhi,15:F6}"
+                              : $"Target cos phi: (Lag)  {tCosPhi,15:F6}");
+                sb.AppendLine($"    tan phi={tTanPhi,15:F6}");
+                sb.AppendLine($"Target Udc: {utDC,15:F6}");
                 sb.AppendLine();
                 sb.AppendLine();
-                sb.AppendLine($"Avg. Uac {m_UacFilter.Val,20:F10}V");
-                sb.AppendLine($"Avg. Iac {m_UacFilter.Val,20:F10}A");
-                sb.AppendLine($"Avg. Udc {m_UacFilter.Val,20:F10}A");
+                sb.AppendLine("Instant:");
+                sb.AppendLine($"uac {rUac,15:F6}V avg.{m_RawUacFilter.Mean,20:F10}V");
+                sb.AppendLine($" var.{m_RawUacFilter.Variance,20:F10} std.{Math.Sqrt(m_RawUacFilter.Variance),20:F10}");
+                sb.AppendLine($"iac {rIac,15:F6}V avg.{m_RawIacFilter.Mean,20:F10}V");
+                sb.AppendLine($" var.{m_RawIacFilter.Variance,20:F10} std.{Math.Sqrt(m_RawIacFilter.Variance),20:F10}");
+                sb.AppendLine($"udc {rUdc,15:F6}V avg.{m_RawUdcFilter.Mean,20:F10}V");
+                sb.AppendLine($" var.{m_RawUdcFilter.Variance,20:F10} std.{Math.Sqrt(m_RawUdcFilter.Variance),20:F10}");
+                sb.AppendLine();
+                sb.AppendLine();
+                sb.AppendLine($"Avg. Uac {m_UacFilter.Mean,20:F10}V");
+                sb.AppendLine($"Avg. Iac {m_UacFilter.Mean,20:F10}A");
+                sb.AppendLine($"Avg. Udc {m_UacFilter.Mean,20:F10}A");
 
                 SetLabel1(sb.ToString());
-                if (checkBox1.Checked)
-                    ; //m_StreamWriter.WriteLine($"{iACre}");
             }
             catch (FormatException)
             {
@@ -218,10 +231,12 @@ namespace Acq
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(textBox1.Text))
+            var s = textBox1.Text;
+            if (string.IsNullOrEmpty(s))
                 return;
 
-            m_Com.Send(Encoding.ASCII.GetBytes(textBox1.Text));
+            m_Com.Send(Encoding.ASCII.GetBytes(s));
+            label2.Text = s;
             textBox1.Text = string.Empty;
         }
 
