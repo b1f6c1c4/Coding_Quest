@@ -22,7 +22,11 @@ namespace Acq
 
         private int m_Frequency;
 
-        private Timer m_Timer;
+        private readonly Timer m_Timer;
+
+        private readonly Filter m_UacFilter = new Filter();
+        private readonly Filter m_IacFilter = new Filter();
+        private readonly Filter m_UdcFilter = new Filter();
 
         public Form1()
         {
@@ -35,9 +39,15 @@ namespace Acq
             m_Timer = new Timer
                           {
                               Enabled = true,
-                              Interval = 1000,
+                              Interval = 1000
                           };
-            m_Timer.Tick += (s, o) => m_Frequency = Interlocked.Exchange(ref m_Count, 0);
+            m_Timer.Tick += (s, o) =>
+                            {
+                                m_Frequency = Interlocked.Exchange(ref m_Count, 0);
+                                m_UacFilter.Tick();
+                                m_IacFilter.Tick();
+                                m_UdcFilter.Tick();
+                            };
 
             button2.Enabled = false;
 
@@ -50,9 +60,14 @@ namespace Acq
                                 StopBits = StopBits.One
                             };
             m_Com = new AsyncSerialPort(m_Profile, 13 * 5 + 2);
+
+            m_Com.PackageArrived += ComOnPackageArrived;
+            m_Com.OpenPort += e => { SetButtonEnable(e != null); };
+            m_Com.ClosePort += e => { SetButtonEnable(e == null); };
         }
 
         private delegate void SetLabel1Delegate(string text);
+
         private void SetLabel1(string text)
         {
             if (label1.InvokeRequired)
@@ -61,21 +76,33 @@ namespace Acq
                 label1.Text = text;
         }
 
+        private delegate void SetButtonEnableDelegate(bool yes);
+
+        private void SetButtonEnable(bool yes)
+        {
+            if (button1.InvokeRequired)
+                button1.Invoke(new SetButtonEnableDelegate(SetButtonEnable), yes);
+            else
+            {
+                button1.Enabled = yes;
+                button2.Enabled = !yes;
+            }
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
-            m_Com.PackageArrived += ComOnPackageArrived;
             m_Profile.Name = listBox1.Text;
             m_Com.Open(m_Profile, new TimeSpan(0, 0, 30));
 
             m_StreamWriter = new StreamWriter("data.txt");
 
             button1.Enabled = false;
-            button2.Enabled = true;
+            button2.Enabled = false;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            button1.Enabled = true;
+            button1.Enabled = false;
             button2.Enabled = false;
 
             m_StreamWriter.Close();
@@ -102,16 +129,20 @@ namespace Acq
                 var uACre = Take(p);
                 var uACim = Take(p);
                 var uACrms = Take(p);
+                m_UacFilter.Data(uACrms);
                 var uACpha = Math.Atan2(uACim, uACre);
 
                 var iACre = Take(p);
                 var iACim = Take(p);
                 var iACrms = Take(p);
+                m_IacFilter.Data(iACrms);
                 var iACpha = Math.Atan2(iACim, iACre);
 
                 var lead = (iACpha - uACpha) % (Math.PI * 2);
 
                 var uDC = Take(p);
+                m_UdcFilter.Data(uDC);
+                var muDC = Take(p);
                 var impR = Take(p);
                 var impX = Take(p);
                 var impZ = Math.Sqrt(impR * impR + impX * impX);
@@ -154,7 +185,7 @@ namespace Acq
                               lead > 0
                                   ? $"Iac-Uac: Lead {+lead / Math.PI * 180,10:F6}"
                                   : $"Iac-Uac: Lag  {-lead / Math.PI * 180,10:F6}");
-                sb.AppendLine($"Udc: {uDC,10:F6}V");
+                sb.AppendLine($"Udc: {uDC,10:F6}V (IIR:) {muDC,10:F6}V");
                 sb.AppendLine("Imp:");
                 sb.Append($"   {impR,10:F6} + j{impX,10:F6}Ohm");
                 sb.AppendLine($"   = {impZ,10:F6}Ohm");
@@ -167,6 +198,11 @@ namespace Acq
                               : $"Target cos phi: (Lag)  {tCosPhi,10:F6}");
                 sb.AppendLine($"    tan phi={tTanPhi,10:F6}");
                 sb.AppendLine($"Target Udc: {utDC,10:F6}");
+                sb.AppendLine();
+                sb.AppendLine();
+                sb.AppendLine($"Avg. Uac {m_UacFilter.Val,20:F10}V");
+                sb.AppendLine($"Avg. Iac {m_UacFilter.Val,20:F10}A");
+                sb.AppendLine($"Avg. Udc {m_UacFilter.Val,20:F10}A");
 
                 SetLabel1(sb.ToString());
                 if (checkBox1.Checked)
@@ -182,6 +218,9 @@ namespace Acq
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(textBox1.Text))
+                return;
+
             m_Com.Send(Encoding.ASCII.GetBytes(textBox1.Text));
             textBox1.Text = string.Empty;
         }
