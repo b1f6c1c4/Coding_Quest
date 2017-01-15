@@ -4,7 +4,6 @@ void PI_Enable(PI_t *pic)
 {
     pic->Enabled = 1;
     pic->Node0   = 0;
-    pic->Node0   = 0;
 }
 
 void PIc_Enable(PIc_t *pic)
@@ -26,7 +25,7 @@ void PIc_Disable(PIc_t *pic)
 
 _iq20 PI_Run(PI_t *pic, _iq20 val)
 {
-    _iq20 temp = _IQ20rmpy(pic->Kp, val) + _IQ25rmpy(pic->Ki, pic->Node0);
+    _iq20 temp = _IQ20rmpy(pic->Kp, val) + _IQ20rmpy(pic->Ki, pic->Node0);
     if (!pic->Enabled)
         pic->Node0 = 0;
     else

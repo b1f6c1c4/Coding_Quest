@@ -10,7 +10,7 @@
 #define SAFE_VOLT _IQ20(4)
 // Reasonable impedance region
 // Unit: Ohm
-#define MIN_R _IQ20(1)
+#define MIN_R _IQ20(0.5)
 #define MAX_R _IQ20(300.0)
 #define MIN_X _IQ20(-20)
 #define MAX_X _IQ20(-3)
@@ -159,9 +159,9 @@ int ChangeState(State_t st)
                     IF_SetPwm(0); // Shortcut AC
                     return 0;
                 case S_CURR:
-                    //ret = CheckImpedance();
-                    //if (ret)
-                    //    return ret;
+                    ret = CheckImpedance();
+                    if (ret)
+                        return ret;
                     if (_IQ20rmpy(MIN_UDC_UAC, g_ACvoltageRms) > g_DCvoltage)
                         return 2;
 
@@ -249,8 +249,6 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     g_ACcurrent = Sin_Run(&m_ACcurrent, iAC);
     g_ACcurrentRms = Pha_Rms(g_ACcurrent);
     g_DCvoltage = uDC;
-
-    g_DCvoltage = g_TargetDCvoltage;
 
     m_SysCount++;
     if (UartCanSend() && ((m_SysCount % 250) == 0))
@@ -381,5 +379,5 @@ void VoltageController()
         g_TargetACcurrent.Re = -MAX_TARG_IAC;
 
     // TanPhi
-    g_TargetACcurrent.Im = _IQ20div(g_TargetACcurrent.Re, g_TargetTanPhi);
+    g_TargetACcurrent.Im = _IQ20rmpy(g_TargetACcurrent.Re, g_TargetTanPhi);
 }
