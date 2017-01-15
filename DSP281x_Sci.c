@@ -27,7 +27,7 @@ void InitSci(void)
     SciaRegs.SCIHBAUD = 0;
     SciaRegs.SCILBAUD = 0x79; // baud rate is 38400
 
-    SciaRegs.SCIFFTX.bit.SCIFFENA    = 1; // Enable FIFO mode
+    SciaRegs.SCIFFTX.bit.SCIFFENA    = 0; // Enable FIFO mode
     SciaRegs.SCIFFTX.bit.SCIRST      = 0; // Reset the SCI transmit and receive channels
     SciaRegs.SCIFFTX.bit.TXFIFOXRESET= 0; // Reset the FIFO pointer to zero and hold in reset
     SciaRegs.SCIFFTX.bit.TXINTCLR    = 1; // Clear TXFFINT flag

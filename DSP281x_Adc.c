@@ -102,6 +102,7 @@ interrupt void  ADCINT_ISR(void)    // ADC
     DCvoltage += AdcRegs.ADCRESULT14 >> 4;
     DCvoltage += AdcRegs.ADCRESULT15 >> 4;
 
+    EINT;
     RawProcess(ACvoltage << 2, ACcurrent << 1, DCvoltage << 2);
 
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;

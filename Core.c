@@ -204,9 +204,9 @@ int ChangeState(State_t st)
                     IF_SetPwm(0); // Shortcut AC
                     return 0;
                 case S_CURR:
-                    ret = CheckImpedance();
-                    if (ret)
-                        return ret;
+                    //ret = CheckImpedance();
+                    //if (ret)
+                    //    return ret;
                     if (_IQ20rmpy(MIN_UDC_UAC, g_ACvoltageRms) > g_DCvoltage)
                         return 2;
 
@@ -295,10 +295,15 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     g_ACcurrentRms = Pha_Rms(g_ACcurrent);
     g_DCvoltage = uDC;
 
+    g_DCvoltage = g_TargetDCvoltage;
+
     m_SysCount++;
-    if (UartCanSend())
+    if (UartCanSend() && ((m_SysCount % 250) == 0))
     {
         UartSendHead();
+        UartSendData(uAC);
+        UartSendData(iAC);
+        UartSendData(uDC);
         UartSendData(m_SysCount);
         UartSendData(g_State);
         UartSendData(g_ACvoltage.Re);
@@ -308,6 +313,7 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
         UartSendData(g_ACcurrent.Im);
         UartSendData(g_ACcurrentRms);
         UartSendData(g_DCvoltage);
+        UartSendData(m_DCvoltage);
         UartSendData(g_Impedance.Re);
         UartSendData(g_Impedance.Im);
         UartSendData(g_TargetACcurrent.Re);
