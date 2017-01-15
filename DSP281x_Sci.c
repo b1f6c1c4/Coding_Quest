@@ -140,6 +140,11 @@ interrupt void SCITXINTA_ISR(void)    // SCI-A
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
 }
 
+int UartCanSend()
+{
+    return m_TX_id >= m_TX_len;
+}
+
 void UartSendHead()
 {
     SciaRegs.SCICTL1.bit.TXENA = 0;

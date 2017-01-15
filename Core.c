@@ -28,6 +28,7 @@
 // Debug code
 extern unsigned long DataToSend = 0;
 static unsigned long long m_SysCount = 0;
+int UartCanSend();
 void UartSendHead();
 void UartSendData(unsigned long d);
 void UartSendDone();
@@ -294,10 +295,12 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     g_ACcurrentRms = Pha_Rms(g_ACcurrent);
     g_DCvoltage = uDC;
 
-    if ((m_SysCount++ % 256ul) == 0)
+    m_SysCount++;
+    if (UartCanSend())
     {
         UartSendHead();
         UartSendData(m_SysCount);
+        UartSendData(g_State);
         UartSendData(g_ACvoltage.Re);
         UartSendData(g_ACvoltage.Im);
         UartSendData(g_ACvoltageRms);
