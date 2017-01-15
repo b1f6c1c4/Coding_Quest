@@ -122,21 +122,43 @@ interrupt void SCIRXINTA_ISR(void)    // SCI-A
     }
 }
 
+static unsigned char m_TXbuff[128];
+static unsigned char m_TX_len = 128;
+static unsigned char m_TX_id = 128;
+
 interrupt void SCITXINTA_ISR(void)    // SCI-A
 {
     SciaRegs.SCIFFTX.bit.TXINTCLR    = 1; // Remember to clear TXFFINT flag
-    SciaRegs.SCICTL1.bit.TXENA       = 0; // Transmitter disabled
+    if (m_TX_id >= m_TX_len)
+        SciaRegs.SCICTL1.bit.TXENA = 0;
+    else
+    {
+        SciaRegs.SCICTL1.bit.TXENA = 1;
+        SciaRegs.SCITXBUF = m_TXbuff[m_TX_id++];
+    }
+
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
 }
 
-void UartSend(unsigned long DataToSend)
+void UartSendHead()
 {
-    SciaRegs.SCICTL1.bit.TXENA = 1;     // When TXENA == 0, SCITXBUF can not be written
-    SciaRegs.SCITXBUF = 0x00;
-    SciaRegs.SCITXBUF = DataToSend>>24;
-    SciaRegs.SCITXBUF = DataToSend>>16;
-    SciaRegs.SCITXBUF = DataToSend>>8;
-    SciaRegs.SCITXBUF = DataToSend;
-    SciaRegs.SCITXBUF = (DataToSend>>24) + (DataToSend>>16) + (DataToSend>>8) + DataToSend;
+    SciaRegs.SCICTL1.bit.TXENA = 0;
+    m_TX_len = 0;
+    m_TXbuff[m_TX_len++] = 0x5a;
+    m_TXbuff[m_TX_len++] = 0xa5;
 }
 
+void UartSendData(unsigned long d)
+{
+    m_TXbuff[m_TX_len++] = d>>24;
+    m_TXbuff[m_TX_len++] = d>>16;
+    m_TXbuff[m_TX_len++] = d>>8;
+    m_TXbuff[m_TX_len++] = d;
+}
+
+void UartSendDone()
+{
+    SciaRegs.SCICTL1.bit.TXENA = 1;
+    m_TX_id = 0;
+    SciaRegs.SCITXBUF = m_TXbuff[m_TX_id++];
+}

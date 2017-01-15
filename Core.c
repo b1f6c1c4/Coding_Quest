@@ -28,7 +28,9 @@
 // Debug code
 extern unsigned long DataToSend = 0;
 static unsigned long long m_SysCount = 0;
-void UartSend(unsigned long);
+void UartSendHead();
+void UartSendData(unsigned long d);
+void UartSendDone();
 
 // State
 State_t g_State = S_IDLE;
@@ -292,11 +294,25 @@ void Process(_iq20 uAC, _iq20 iAC, _iq20 uDC)
     g_ACcurrentRms = Pha_Rms(g_ACcurrent);
     g_DCvoltage = uDC;
 
-    g_DCvoltage = _IQ20(7.5); // TODO
-
-    if ((m_SysCount & 0x7F) == 0) // TODO
-        UartSend(m_DCvoltage);
-    m_SysCount++;
+    if ((m_SysCount++ % 256ul) == 0)
+    {
+        UartSendHead();
+        UartSendData(m_SysCount);
+        UartSendData(g_ACvoltage.Re);
+        UartSendData(g_ACvoltage.Im);
+        UartSendData(g_ACvoltageRms);
+        UartSendData(g_ACcurrent.Re);
+        UartSendData(g_ACcurrent.Im);
+        UartSendData(g_ACcurrentRms);
+        UartSendData(g_DCvoltage);
+        UartSendData(g_Impedance.Re);
+        UartSendData(g_Impedance.Im);
+        UartSendData(g_TargetACcurrent.Re);
+        UartSendData(g_TargetACcurrent.Im);
+        UartSendData(g_TargetTanPhi);
+        UartSendData(g_TargetDCvoltage);
+        UartSendDone();
+    }
 
     if (g_State == S_IDLE)
         return;
