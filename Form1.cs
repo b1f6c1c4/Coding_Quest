@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -20,6 +19,7 @@ namespace Acq
 
         private int m_Frequency;
 
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly Timer m_Timer;
 
         private readonly Filter m_UacFilter = new Filter();
@@ -38,32 +38,35 @@ namespace Acq
                 listBox1.Items.Add(portName);
             listBox1.Text = (string)listBox1.Items[0];
 
-            m_Timer = new Timer
-                          {
-                              Enabled = true,
-                              Interval = 1000
-                          };
-            m_Timer.Tick += (s, o) =>
-                            {
-                                m_Frequency = Interlocked.Exchange(ref m_Count, 0);
-                                m_UacFilter.Tick();
-                                m_IacFilter.Tick();
-                                m_UdcFilter.Tick();
-                                m_RawUacFilter.Tick();
-                                m_RawIacFilter.Tick();
-                                m_RawUdcFilter.Tick();
-                            };
+            m_Timer =
+                new Timer
+                    {
+                        Enabled = true,
+                        Interval = 1000
+                    };
+            m_Timer.Tick +=
+                (s, o) =>
+                {
+                    m_Frequency = Interlocked.Exchange(ref m_Count, 0);
+                    m_UacFilter.Tick();
+                    m_IacFilter.Tick();
+                    m_UdcFilter.Tick();
+                    m_RawUacFilter.Tick();
+                    m_RawIacFilter.Tick();
+                    m_RawUdcFilter.Tick();
+                };
 
             button2.Enabled = false;
 
-            m_Profile = new Profile
-                            {
-                                BaudRate = 38400,
-                                DataBits = 8,
-                                Name = listBox1.Text,
-                                Parity = Parity.None,
-                                StopBits = StopBits.One
-                            };
+            m_Profile =
+                new Profile
+                    {
+                        BaudRate = 38400,
+                        DataBits = 8,
+                        Name = listBox1.Text,
+                        Parity = Parity.None,
+                        StopBits = StopBits.One
+                    };
             m_Com = new AsyncSerialPort(m_Profile, 19 * 4 + 2);
 
             m_Com.PackageArrived += ComOnPackageArrived;
@@ -209,15 +212,15 @@ namespace Acq
                 sb.AppendLine("Instant:");
                 sb.AppendLine($"uac {rUac,15:F6}V avg.{m_RawUacFilter.Mean,20:F10}V");
                 sb.AppendLine($" var.{m_RawUacFilter.Variance,20:F10} std.{Math.Sqrt(m_RawUacFilter.Variance),20:F10}");
-                sb.AppendLine($"iac {rIac,15:F6}V avg.{m_RawIacFilter.Mean,20:F10}V");
+                sb.AppendLine($"iac {rIac,15:F6}A avg.{m_RawIacFilter.Mean,20:F10}A");
                 sb.AppendLine($" var.{m_RawIacFilter.Variance,20:F10} std.{Math.Sqrt(m_RawIacFilter.Variance),20:F10}");
                 sb.AppendLine($"udc {rUdc,15:F6}V avg.{m_RawUdcFilter.Mean,20:F10}V");
                 sb.AppendLine($" var.{m_RawUdcFilter.Variance,20:F10} std.{Math.Sqrt(m_RawUdcFilter.Variance),20:F10}");
                 sb.AppendLine();
                 sb.AppendLine();
                 sb.AppendLine($"Avg. Uac {m_UacFilter.Mean,20:F10}V");
-                sb.AppendLine($"Avg. Iac {m_UacFilter.Mean,20:F10}A");
-                sb.AppendLine($"Avg. Udc {m_UacFilter.Mean,20:F10}A");
+                sb.AppendLine($"Avg. Iac {m_IacFilter.Mean,20:F10}A");
+                sb.AppendLine($"Avg. Udc {m_UdcFilter.Mean,20:F10}V");
 
                 SetLabel1(sb.ToString());
             }
